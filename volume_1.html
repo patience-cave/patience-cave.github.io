@@ -80,11 +80,33 @@
     // Set the background image using the folder with an underscore.
     const bgBasePath = `/images/volume_${volume}/bg`;
     loadImageWithExtensions(bgBasePath, function(bgImagePath) {
-      document.body.style.backgroundImage = `url('${bgImagePath}')`;
-      document.body.style.backgroundImage = `url('${bgImagePath}')`;
-      document.body.style.backgroundSize = "cover";
-      document.body.style.backgroundAttachment = "fixed";
-      document.body.style.backgroundPosition = "center";
+      //document.body.style.backgroundImage = `url('${bgImagePath}')`;
+      //document.body.style.backgroundImage = `url('${bgImagePath}')`;
+      //document.body.style.backgroundSize = "cover";
+      //document.body.style.backgroundAttachment = "fixed";
+      //document.body.style.backgroundPosition = "center";
+      // Create a new div element to serve as the background container
+      const bgDiv = document.createElement('div');
+
+      // Apply CSS styles to fix it in place
+      bgDiv.style.position = 'fixed';
+      bgDiv.style.top = 0;
+      bgDiv.style.left = 0;
+      bgDiv.style.width = '100vw';
+      bgDiv.style.height = '100vh';
+
+      // Set the background image and other properties
+      bgDiv.style.backgroundImage = `url('${bgImagePath}')`;
+      bgDiv.style.backgroundSize = 'cover';
+      bgDiv.style.backgroundPosition = 'center';
+      bgDiv.style.backgroundRepeat = 'no-repeat';
+
+      // Place the background div behind all other content
+      bgDiv.style.zIndex = '-1';
+
+      // Add it to the beginning of the body
+      document.body.prepend(bgDiv);
+
     }, function() {
       console.error('Background image not found.');
     });
