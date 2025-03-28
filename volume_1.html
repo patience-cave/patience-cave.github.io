@@ -61,12 +61,16 @@
     // Function to sequentially add page images.
     window.addEventListener('DOMContentLoaded', function() {
       const container = document.getElementById('container');
-      let page = 1;
+      let page = 0;
 
       function addNextImage() {
         const img = new Image();
-        // Page images come from a folder with a dash in the volume name.
-        img.src = `/images/volume-${volume}/${page}.PNG`;
+        // Page images come from a folder with a dash in the volume 
+        if (page == 0) {
+          img.sec = `/images/volume-${volume}/cover.PNG`;
+        } else {
+          img.src = `/images/volume-${volume}/${page}.PNG`;
+        };
         img.className = 'page-img';
 
         img.onload = function() {
