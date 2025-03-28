@@ -2,95 +2,181 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Patience Cave | Super Patience Chair</title>
+  <title>The Patience Cave</title>
   <style>
+    /* General reset & body style */
+    * {
+      margin: 0; 
+      padding: 0;
+      box-sizing: border-box;
+    }
     body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #121212;
-      color: #f2f2f2;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      background-color: #f2c992; /* Warm tan background */
+      color: #3b2c2b;           /* Dark brown text */
+      line-height: 1.4;
     }
-    header {
-      background: #1e1e1e;
-      padding: 2rem;
-      text-align: center;
-    }
-    h1 {
-      margin: 0;
-      font-size: 2.5rem;
-    }
-    p {
-      color: #ccc;
-      font-size: 1.2rem;
-    }
-    .gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1rem;
-      padding: 2rem;
-    }
-    .gallery img {
+
+    /* Top banner container */
+    .hero {
+      position: relative;
       width: 100%;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: transform 0.3s;
+      min-height: 400px;
+      background: url("/images/main.png") no-repeat center center / cover;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 2rem;
+      border-bottom-left-radius: 40px;
+      border-bottom-right-radius: 40px;
     }
-    .gallery img:hover {
-      transform: scale(1.03);
+    /* Hero text box for the big heading */
+    .hero-text {
+      background-color: rgba(248, 220, 177, 0.9); /* a lighter overlay */
+      border-radius: 20px;
+      padding: 1rem 1.5rem;
+      max-width: 600px;
     }
-    .lightbox {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0,0,0,0.8);
-      justify-content: center;
+    .hero-text h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+      color: #3b2c2b;
+    }
+    .hero-text p {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Section for "Read the Graphic Novel" */
+    .novel-section {
+      text-align: center;
+      padding: 2rem 1rem;
+    }
+    .novel-section h2 {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+    }
+    .novel-section h3 {
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin-bottom: 1.5rem;
+      color: #77563d; /* a slightly darker brown */
+    }
+
+    /* Volumes grid */
+    .volumes {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1.5rem;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    .volume-card {
+      background-color: #f8dcb1; /* lighter tan to stand out */
+      border-radius: 20px;
+      padding: 1rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      z-index: 1000;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    .lightbox img {
-      max-width: 90vw;
-      max-height: 90vh;
-      border-radius: 12px;
+    .volume-card img {
+      width: 100%;
+      max-width: 150px;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+    }
+    .volume-title {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    .read-button {
+      text-decoration: none;
+      background-color: #78c5d6; /* teal button */
+      color: #3b2c2b;
+      font-weight: bold;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      display: inline-block;
+      transition: background-color 0.2s ease;
+    }
+    .read-button:hover {
+      background-color: #5faabf;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Patience Cave</h1>
-    <p>Free volumes of the Super Patience Chair graphic novel</p>
-  </header>
 
-  <div class="gallery">
-    <img src="volume1.jpg" alt="Volume 1" />
-    <img src="volume2.jpg" alt="Volume 2" />
-    <img src="volume3.jpg" alt="Volume 3" />
-    <!-- Add more image entries here -->
+  <!-- Top hero section with main cave image -->
+  <div class="hero">
+    <div class="hero-text">
+      <h1>WELCOME TO THE PATIENCE CAVE</h1>
+      <p>
+        Patience is a difficult but important virtue to cultivate in an ever-changing world. 
+        Here at the Patience Cave, you'll learn to embrace stillness and nurture calm determination. 
+        Pull up a seat and stay awhile.
+      </p>
+    </div>
   </div>
 
-  <div class="lightbox" id="lightbox">
-    <img src="" alt="Expanded view" />
-  </div>
+  <!-- Middle section: call to read the graphic novel -->
+  <section class="novel-section">
+    <h2>READ THE GRAPHIC NOVEL</h2>
+    <h3>SUPER PATIENCE CHAIR</h3>
+
+    <!-- Container for volumes -->
+    <div class="volumes" id="volumes">
+      <!-- JavaScript will populate volume cards here -->
+    </div>
+  </section>
 
   <script>
-    const lightbox = document.getElementById('lightbox');
-    const lightboxImg = lightbox.querySelector('img');
-    const galleryImages = document.querySelectorAll('.gallery img');
+    // Dynamically list volumes by checking if cover images exist
+    // We'll try up to 20 volumes; stop once we fail to load a cover.
+    (async function() {
+      const volumesContainer = document.getElementById('volumes');
+      for (let i = 1; i <= 20; i++) {
+        const coverPath = `/images/volume-${i}/cover.png`;
+        // We'll check if the cover image exists by trying to fetch it:
+        try {
+          const response = await fetch(coverPath, { method: 'HEAD' });
+          if (!response.ok) {
+            // If it's a 404 or similar, break out of the loop
+            break;
+          }
+          // If the cover exists, create a volume card
+          const volumeCard = document.createElement('div');
+          volumeCard.className = 'volume-card';
+          
+          const coverImg = document.createElement('img');
+          coverImg.src = coverPath;
+          coverImg.alt = `Volume ${i} Cover`;
+          
+          const titleDiv = document.createElement('div');
+          titleDiv.className = 'volume-title';
+          titleDiv.innerText = `Volume ${i}`;
+          
+          const readLink = document.createElement('a');
+          readLink.href = `/volume-${i}.html`;
+          readLink.className = 'read-button';
+          readLink.innerText = 'READ';
 
-    galleryImages.forEach(img => {
-      img.addEventListener('click', () => {
-        lightbox.style.display = 'flex';
-        lightboxImg.src = img.src;
-        lightboxImg.alt = img.alt;
-      });
-    });
+          volumeCard.appendChild(coverImg);
+          volumeCard.appendChild(titleDiv);
+          volumeCard.appendChild(readLink);
+          volumesContainer.appendChild(volumeCard);
 
-    lightbox.addEventListener('click', () => {
-      lightbox.style.display = 'none';
-    });
+        } catch (err) {
+          // If fetch fails entirely, break out
+          break;
+        }
+      }
+    })();
   </script>
+
 </body>
 </html>
