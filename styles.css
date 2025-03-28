@@ -1,0 +1,164 @@
+/* Reset default styles */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Architects Daughter', cursive;
+}
+
+/* Main container styling */
+.main-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #F5D7B5; /* Peach background */
+    padding: 20px;
+    min-height: 100vh;
+}
+
+/* Cave image with jagged border */
+.cave-image {
+    width: 100%;
+    max-width: 800px;
+    margin-bottom: 20px;
+}
+
+.cave-image img {
+    width: 100%;
+    clip-path: polygon(0% 0%, 100% 0%, 100% 90%, 95% 95%, 90% 90%, 85% 95%, 80% 90%, 75% 95%, 70% 90%, 65% 95%, 60% 90%, 55% 95%, 50% 90%, 45% 95%, 40% 90%, 35% 95%, 30% 90%, 25% 95%, 20% 90%, 15% 95%, 10% 90%, 5% 95%, 0% 90%);
+}
+
+/* Welcome bubble styling */
+.welcome-bubble {
+    background-color: #5A9E9E; /* Teal fill */
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+    margin-bottom: 40px;
+    max-width: 600px;
+    text-align: center;
+}
+
+.welcome-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 20px solid #5A9E9E; /* Speech bubble tail */
+}
+
+.welcome-bubble h1 {
+    font-family: 'Permanent Marker', cursive;
+    color: #FFFFFF; /* White text */
+    font-size: 48px;
+    margin: 0;
+    letter-spacing: 2px;
+}
+
+.welcome-bubble p {
+    font-family: 'Architects Daughter', cursive;
+    color: #4A3C31; /* Dark brown text */
+    font-size: 18px;
+    line-height: 1.5;
+    margin: 10px 0 0;
+}
+
+/* Headings styling */
+.graphic-novel, .super-patience {
+    font-family: 'Permanent Marker', cursive;
+    font-size: 36px;
+    text-align: center;
+    margin: 20px 0 10px;
+    letter-spacing: 2px;
+}
+
+.graphic-novel {
+    color: #5A9E9E; /* Teal */
+}
+
+.super-patience {
+    color: #4A7A7A; /* Darker teal */
+}
+
+/* SVG squiggles */
+.squiggle {
+    display: block;
+    margin: 0 auto 20px;
+}
+
+.squiggle-path {
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+    animation: draw 2s linear forwards;
+}
+
+@keyframes draw {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* Volume covers styling */
+.volume-covers {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.volume {
+    width: 200px;
+    text-align: center;
+}
+
+.volume img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+/* Read button styling */
+.read-button {
+    display: block;
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #FFFFFF; /* White fill */
+    color: #5A9E9E; /* Teal text */
+    text-decoration: none;
+    border: 2px solid #5A9E9E;
+    border-radius: 10px;
+    font-family: 'Permanent Marker', cursive;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.read-button:hover {
+    background-color: #5A9E9E;
+    color: #FFFFFF;
+}
+
+.read-button:focus {
+    outline: 2px solid #5A9E9E;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .volume-covers {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .volume {
+        width: 80%;
+    }
+
+    .welcome-bubble h1 {
+        font-size: 36px;
+    }
+
+    .graphic-novel, .super-patience {
+        font-size: 28px;
+    }
+}
