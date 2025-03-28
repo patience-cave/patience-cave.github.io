@@ -68,12 +68,12 @@
       //img.src = '/images/volume_' + volNumber + '/cover.PNG';
       img.src = '/images/volume_1/cover.PNG';
       img.alt = 'Volume ' + volNumber;
-      img.style.display = 'none';
+      // .style.display = 'none';
 
       // When the image loads, create the corresponding button
       img.onload = function() {
         // Remove the test image from the DOM
-        img.remove();
+        // img.remove();
 
         // Create a pastel blue oval button for this volume
         const btn = document.createElement('button');
