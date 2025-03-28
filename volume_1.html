@@ -23,7 +23,7 @@
     .page-img {
       display: block;
       width: 90%;
-      max-width: 90%;
+      max-width: 500px;  /* limit maximum width to 500px */
       border: 4px solid black; /* adjust thickness if needed */
       margin: 20px auto 5px auto;
     }
@@ -80,39 +80,32 @@
     // Set the background image using the folder with an underscore.
     const bgBasePath = `/images/volume_${volume}/bg`;
     loadImageWithExtensions(bgBasePath, function(bgImagePath) {
-      //document.body.style.backgroundImage = `url('${bgImagePath}')`;
-      //document.body.style.backgroundImage = `url('${bgImagePath}')`;
-      //document.body.style.backgroundSize = "cover";
-      //document.body.style.backgroundAttachment = "fixed";
-      //document.body.style.backgroundPosition = "
-      // Place the background div behind all other content
       // Create a new div element to serve as the background container
-const bgDiv = document.createElement('div');
+      const bgDiv = document.createElement('div');
 
-// Apply CSS styles to fix it in place and cover the viewport
-bgDiv.style.position = 'fixed';
-bgDiv.style.top = 0;
-bgDiv.style.left = 0;
-bgDiv.style.width = '100vw';
-bgDiv.style.height = '100vh';
-bgDiv.style.backgroundImage = `url('${bgImagePath}')`;
-bgDiv.style.backgroundSize = 'cover';
-bgDiv.style.backgroundPosition = 'center';
-bgDiv.style.backgroundRepeat = 'no-repeat';
-bgDiv.style.zIndex = '-1';
+      // Apply CSS styles to fix it in place and cover the viewport
+      bgDiv.style.position = 'fixed';
+      bgDiv.style.top = 0;
+      bgDiv.style.left = 0;
+      bgDiv.style.width = '100vw';
+      bgDiv.style.height = '100vh';
+      bgDiv.style.backgroundImage = `url('${bgImagePath}')`;
+      bgDiv.style.backgroundSize = 'cover';
+      bgDiv.style.backgroundPosition = 'center';
+      bgDiv.style.backgroundRepeat = 'no-repeat';
+      bgDiv.style.zIndex = '-1';
 
-// Set initial opacity to 0 (invisible) and add a transition effect
-bgDiv.style.opacity = '0';
-bgDiv.style.transition = 'opacity 1.5s ease-in-out';
+      // Set initial opacity to 0 (invisible) and add a transition effect
+      bgDiv.style.opacity = '0';
+      bgDiv.style.transition = 'opacity 1.5s ease-in-out';
 
-// Add the background div to the beginning of the body
-document.body.prepend(bgDiv);
+      // Add the background div to the beginning of the body
+      document.body.prepend(bgDiv);
 
-// After the window fully loads, change the opacity to 1 to fade in
-window.addEventListener('load', () => {
-  bgDiv.style.opacity = '1';
-});
-
+      // After the window fully loads, change the opacity to 1 to fade in
+      window.addEventListener('load', () => {
+        bgDiv.style.opacity = '1';
+      });
 
     }, function() {
       console.error('Background image not found.');
