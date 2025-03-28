@@ -1,77 +1,182 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Patience Chair</title>
-    <link rel="stylesheet" href="styles.css">
-    <!-- Load hand-drawn fonts from Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Permanent+Marker&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <title>The Patience Cave</title>
+  <style>
+    /* General reset & body style */
+    * {
+      margin: 0; 
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      background-color: #f2c992; /* Warm tan background */
+      color: #3b2c2b;           /* Dark brown text */
+      line-height: 1.4;
+    }
+
+    /* Top banner container */
+    .hero {
+      position: relative;
+      width: 100%;
+      min-height: 400px;
+      background: url("/images/main.png") no-repeat center center / cover;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 2rem;
+      border-bottom-left-radius: 40px;
+      border-bottom-right-radius: 40px;
+    }
+    /* Hero text box for the big heading */
+    .hero-text {
+      background-color: rgba(248, 220, 177, 0.9); /* a lighter overlay */
+      border-radius: 20px;
+      padding: 1rem 1.5rem;
+      max-width: 600px;
+    }
+    .hero-text h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+      color: #3b2c2b;
+    }
+    .hero-text p {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Section for "Read the Graphic Novel" */
+    .novel-section {
+      text-align: center;
+      padding: 2rem 1rem;
+    }
+    .novel-section h2 {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+    }
+    .novel-section h3 {
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin-bottom: 1.5rem;
+      color: #77563d; /* a slightly darker brown */
+    }
+
+    /* Volumes grid */
+    .volumes {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1.5rem;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    .volume-card {
+      background-color: #f8dcb1; /* lighter tan to stand out */
+      border-radius: 20px;
+      padding: 1rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .volume-card img {
+      width: 100%;
+      max-width: 150px;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+    }
+    .volume-title {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    .read-button {
+      text-decoration: none;
+      background-color: #78c5d6; /* teal button */
+      color: #3b2c2b;
+      font-weight: bold;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      display: inline-block;
+      transition: background-color 0.2s ease;
+    }
+    .read-button:hover {
+      background-color: #5faabf;
+    }
+  </style>
 </head>
 <body>
-    <div class="main-container">
-        <!-- Cave Image -->
-        <div class="cave-image">
-            <img src="/images/main.png" alt="Illustration of the Patience Cave with chairs and figures">
-        </div>
 
-        <!-- Welcome Bubble -->
-        <div class="welcome-bubble">
-            <h1>WELCOME TO THE PATIENCE CAVE</h1>
-            <p>Patience is a difficult but important virtue to cultivate in an ever-changing world. Here at the Patience Cave, you’ll learn to embrace stillness and nurture calm determination. Pull up a seat and stay awhile.</p>
-        </div>
-
-        <!-- Read the Graphic Novel Heading -->
-        <h2 class="graphic-novel">READ THE GRAPHIC NOVEL</h2>
-        <svg class="squiggle" width="200" height="20" viewBox="0 0 200 20">
-            <path d="M0,15 Q20,5 40,15 T80,15 Q100,5 120,15 T160,15 Q180,5 200,15" stroke="#5A9E9E" stroke-width="2" fill="none" class="squiggle-path"/>
-        </svg>
-
-        <!-- Super Patience Chair Heading -->
-        <h2 class="super-patience">SUPER PATIENCE CHAIR</h2>
-        <svg class="squiggle" width="200" height="20" viewBox="0 0 200 20">
-            <path d="M0,15 Q20,5 40,15 T80,15 Q100,5 120,15 T160,15 Q180,5 200,15" stroke="#4A7A7A" stroke-width="2" fill="none" class="squiggle-path"/>
-        </svg>
-
-        <!-- Volume Covers (Static Example for 3 Volumes; Can Be Made Dynamic) -->
-        <div class="volume-covers">
-            <div class="volume">
-                <img src="/images/volume-1/cover.png" alt="Cover of Super Patience Chair Volume One">
-                <a href="/volume-1.html" class="read-button">READ</a>
-            </div>
-            <div class="volume">
-                <img src="/images/volume-2/cover.png" alt="Cover of Super Patience Chair Volume Two">
-                <a href="/volume-2.html" class="read-button">READ</a>
-            </div>
-            <div class="volume">
-                <img src="/images/volume-3/cover.png" alt="Cover of Super Patience Chair Volume Three">
-                <a href="/volume-3.html" class="read-button">READ</a>
-            </div>
-            <!-- Note: Add more volumes up to /images/volume-10/cover.png as needed -->
-        </div>
+  <!-- Top hero section with main cave image -->
+  <div class="hero">
+    <div class="hero-text">
+      <h1>WELCOME TO THE PATIENCE CAVE</h1>
+      <p>
+        Patience is a difficult but important virtue to cultivate in an ever-changing world. 
+        Here at the Patience Cave, you'll learn to embrace stillness and nurture calm determination. 
+        Pull up a seat and stay awhile.
+      </p>
     </div>
+  </div>
+
+  <!-- Middle section: call to read the graphic novel -->
+  <section class="novel-section">
+    <h2>READ THE GRAPHIC NOVEL</h2>
+    <h3>SUPER PATIENCE CHAIR</h3>
+
+    <!-- Container for volumes -->
+    <div class="volumes" id="volumes">
+      <!-- JavaScript will populate volume cards here -->
+    </div>
+  </section>
+
+  <script>
+    // Dynamically list volumes by checking if cover images exist
+    // We'll try up to 20 volumes; stop once we fail to load a cover.
+    (async function() {
+      const volumesContainer = document.getElementById('volumes');
+      for (let i = 1; i <= 20; i++) {
+        const coverPath = `/images/volume-${i}/cover.png`;
+        // We'll check if the cover image exists by trying to fetch it:
+        try {
+          const response = await fetch(coverPath, { method: 'HEAD' });
+          if (!response.ok) {
+            // If it's a 404 or similar, break out of the loop
+            break;
+          }
+          // If the cover exists, create a volume card
+          const volumeCard = document.createElement('div');
+          volumeCard.className = 'volume-card';
+          
+          const coverImg = document.createElement('img');
+          coverImg.src = coverPath;
+          coverImg.alt = `Volume ${i} Cover`;
+          
+          const titleDiv = document.createElement('div');
+          titleDiv.className = 'volume-title';
+          titleDiv.innerText = `Volume ${i}`;
+          
+          const readLink = document.createElement('a');
+          readLink.href = `/volume-${i}.html`;
+          readLink.className = 'read-button';
+          readLink.innerText = 'READ';
+
+          volumeCard.appendChild(coverImg);
+          volumeCard.appendChild(titleDiv);
+          volumeCard.appendChild(readLink);
+          volumesContainer.appendChild(volumeCard);
+
+        } catch (err) {
+          // If fetch fails entirely, break out
+          break;
+        }
+      }
+    })();
+  </script>
+
 </body>
-<script>
-  const volumeCovers = document.querySelector('.volume-covers');
-const maxVolumes = 10;
-
-for (let i = 1; i <= maxVolumes; i++) {
-    const volumeDiv = document.createElement('div');
-    volumeDiv.className = 'volume';
-
-    const img = document.createElement('img');
-    img.src = `/images/volume-${i}/cover.png`;
-    img.alt = `Cover of Super Patience Chair Volume ${i}`;
-    img.onerror = () => volumeDiv.remove(); // Remove if image doesn't exist
-
-    const button = document.createElement('a');
-    button.href = `/volume-${i}.html`;
-    button.className = 'read-button';
-    button.textContent = 'READ';
-
-    volumeDiv.appendChild(img);
-    volumeDiv.appendChild(button);
-    volumeCovers.appendChild(volumeDiv);
-}
-</script>
 </html>
