@@ -62,10 +62,10 @@
     }
     /* Container for each volume item (cover image + button) */
     .volume-item {
-      margin: 0 10px;
+      margin: 0 5px;  /* Reduced margin for larger cover images */
       text-align: center;
       /* Default: 3 items per row */
-      width: calc((100% - 60px) / 3);
+      width: calc((100% - 30px) / 3);
     }
     /* Style for the cover image inside volume item */
     .volume-item img {
@@ -73,28 +73,28 @@
       height: auto;
       display: block;
     }
-    /* Pastel blue oval button styles – slightly bigger */
+    /* Pastel blue oval button styles – scaled down */
     .volume-button {
       background-color: #add8e6;
       border: none;
       border-radius: 25px;
-      padding: 12px 24px;
+      padding: 6px 12px; /* reduced padding */
       margin-top: 10px;
-      font-size: 18px;
-      font-family: "Open Sans";
+      font-size: 14px; /* reduced font size */
+      font-family: "Open Sans", sans-serif;
       font-weight: bold;
       cursor: pointer;
     }
     /* Media query for thin width devices (iPhone portrait etc.) – 2 per row */
     @media screen and (max-width: 480px) {
       .volume-item {
-        width: calc((100% - 40px) / 2);
+        width: calc((100% - 20px) / 2);
       }
     }
     /* Media query for wider screens (desktop) – 4 per row */
     @media screen and (min-width: 1024px) {
       .volume-item {
-        width: calc((100% - 80px) / 4);
+        width: calc((100% - 40px) / 4);
       }
     }
   </style>
