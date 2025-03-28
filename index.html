@@ -57,10 +57,10 @@
     function addVolume(volNumber) {
       // Create a new anchor and image element for this volume
       const link = document.createElement('a');
-      link.href = '/volume-' + volNumber + '.html';
+      link.href = '/volume_' + volNumber + '.html';
 
       const img = document.createElement('img');
-      img.src = '/images/volume-' + volNumber + '/cover.png';
+      img.src = '/images/volume_' + volNumber + '/cover.png';
       img.alt = 'Volume ' + volNumber;
 
       // When the image loads, append it and then try loading the next volume
