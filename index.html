@@ -15,8 +15,8 @@
       position: fixed;
       top: 0;
       bottom: 0;
-      /* Calculate the space on each side: (viewport width - main container (500px) - borders (2*10px)) / 2 */
-      width: calc((100% - 520px) / 2);
+      /* Calculate the space on each side: (viewport width - main container total width (500px + 40px border)) / 2 */
+      width: calc((100% - 540px) / 2);
       background: black url('/images/bg.PNG') no-repeat center center;
       background-size: cover;
       z-index: -1;
@@ -28,18 +28,17 @@
       right: 0;
     }
     /* Hide side backgrounds on small screens */
-    @media screen and (max-width: 540px) {
+    @media screen and (max-width: 560px) {
       .side-bg {
         display: none;
       }
     }
-    /* Main container centered with max width 500px and side borders */
+    /* Main container centered with max width 500px content and 20px border on all sides */
     #mainContainer {
       max-width: 500px;
       width: 100%;
       margin: 0 auto;
-      border-left: 10px solid black;
-      border-right: 10px solid black;
+      border: 20px solid black;
       background-color: #FFDAB9; /* Peach background for container content */
     }
     /* Top banner image styles */
@@ -78,9 +77,9 @@
       background-color: #add8e6;
       border: none;
       border-radius: 25px;
-      padding: 6px 12px; /* reduced padding */
+      padding: 6px 12px;
       margin-top: 10px;
-      font-size: 14px; /* reduced font size */
+      font-size: 14px;
       font-family: "Open Sans", sans-serif;
       font-weight: bold;
       cursor: pointer;
