@@ -114,7 +114,11 @@
         //coverImg.src = '/images/volume_' + volNumber + '/cover.PNG';
         coverImg.src = '/images/volume_1/cover.PNG';
         coverImg.alt = 'Volume ' + volNumber;
+        coverImg.onclick = function() {
+          window.location.href = '/volume_' + volNumber + '.html';
+        };
 
+      
         // Create the pastel blue oval button
         const btn = document.createElement('button');
         btn.textContent = 'Volume ' + volNumber;
