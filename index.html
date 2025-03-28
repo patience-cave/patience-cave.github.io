@@ -38,8 +38,10 @@
     /* Style for the cover image inside volume item */
     .volume-item img {
       width: 100%;
+      max-width: 500px; /* Limit maximum width to 500px */
       height: auto;
       display: block;
+      margin: 0 auto;
     }
     /* Pastel blue oval button styles – slightly bigger */
     .volume-button {
@@ -65,7 +67,6 @@
         width: calc((100% - 80px) / 4);
       }
     }
-    /* Removed the previous incomplete-row specific sizing */
   </style>
 </head>
 <body>
@@ -97,7 +98,6 @@
       // Create an image element to test if the volume exists (hidden from view)
       const testImg = document.createElement('img');
       testImg.src = '/images/volume_' + volNumber + '/cover.PNG';
-      //testImg.src = '/images/volume_1/cover.PNG';
       testImg.alt = 'Volume ' + volNumber;
       testImg.style.display = 'none';
 
@@ -111,14 +111,12 @@
 
         // Create the cover image element (visible)
         const coverImg = document.createElement('img');
-        //coverImg.src = '/images/volume_' + volNumber + '/cover.PNG';
-        coverImg.src = '/images/volume_1/cover.PNG';
+        coverImg.src = '/images/volume_' + volNumber + '/cover.PNG';
         coverImg.alt = 'Volume ' + volNumber;
         coverImg.onclick = function() {
           window.location.href = '/volume_' + volNumber + '.html';
         };
 
-      
         // Create the pastel blue oval button
         const btn = document.createElement('button');
         btn.textContent = 'Volume ' + volNumber;
@@ -161,8 +159,6 @@
     addVolume(volume);
   </script>
 
-  
-<img class="banner" src="/images/promo.PNG" alt="Promo Image">
-
+  <img class="banner" src="/images/promo.PNG" alt="Promo Image">
 </body>
 </html>
