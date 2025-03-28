@@ -97,6 +97,24 @@
       cursor: pointer;
     }
 
+    /* Shop container styling for the new shop image and button overlay */
+    .shop-container {
+      position: relative;
+      margin: 20px 0;
+    }
+    .shop-container img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .shop-container .volume-button {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      margin: 0; /* remove extra margin if needed */
+    }
+
     /* Media query for thin width devices (iPhone portrait etc.) – 2 per row */
     @media screen and (max-width: 480px) {
       .volume-item {
@@ -129,6 +147,12 @@
 
     <!-- Promo banner image -->
     <img class="banner" src="/images/promo.PNG" alt="Promo Image">
+    
+    <!-- New Shop Section -->
+    <div class="shop-container">
+      <img src="/images/shop.png" alt="Shop Image">
+      <button class="volume-button" onclick="window.location.href='/shop.html'">Browse Merch</button>
+    </div>
   </div>
 
   <script>
