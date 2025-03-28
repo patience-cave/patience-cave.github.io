@@ -4,22 +4,52 @@
   <meta charset="UTF-8">
   <title>The Patience Cave</title>
   <style>
-    /* Remove default margin/padding */
+    /* Remove default margin/padding and set a fallback background */
     body, html {
       margin: 0;
       padding: 0;
+      background-color: black;
     }
-    /* Top banner & promo image styles */
+    /* Side background divs for left/right sides */
+    .side-bg {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      /* Calculate the space on each side: (viewport width - main container (500px) - borders (2*10px)) / 2 */
+      width: calc((100% - 520px) / 2);
+      background: black url('/images/bg.PNG') no-repeat center center;
+      background-size: cover;
+      z-index: -1;
+    }
+    #side-left {
+      left: 0;
+    }
+    #side-right {
+      right: 0;
+    }
+    /* Hide side backgrounds on small screens */
+    @media screen and (max-width: 540px) {
+      .side-bg {
+        display: none;
+      }
+    }
+    /* Main container centered with max width 500px and side borders */
+    #mainContainer {
+      max-width: 500px;
+      width: 100%;
+      margin: 0 auto;
+      border-left: 10px solid black;
+      border-right: 10px solid black;
+      background-color: #FFDAB9; /* Peach background for container content */
+    }
+    /* Top banner image styles */
     .banner {
-      width: 90%;
-      max-width: 500px; /* Limit maximum width */
+      width: 100%;
       height: auto;
       display: block;
-      margin: 20px auto;
     }
-    /* Container for volumes with a peach background */
+    /* Container for volumes with padding */
     .volumes-container {
-      background-color: #FFDAB9; /* Peach color */
       padding: 20px;
       text-align: center;
     }
@@ -40,10 +70,8 @@
     /* Style for the cover image inside volume item */
     .volume-item img {
       width: 100%;
-      max-width: 500px; /* Constrain cover image width */
       height: auto;
       display: block;
-      margin: 0 auto;
     }
     /* Pastel blue oval button styles – slightly bigger */
     .volume-button {
@@ -72,12 +100,22 @@
   </style>
 </head>
 <body>
-  <!-- Top centered banner image -->
-  <img class="banner" src="/images/IMG_9061.jpeg" alt="Banner Image">
+  <!-- Static side backgrounds -->
+  <div id="side-left" class="side-bg"></div>
+  <div id="side-right" class="side-bg"></div>
 
-  <!-- Container for dynamic volume images -->
-  <div class="volumes-container" id="volumesContainer">
-    <!-- Volume images will be inserted here by JavaScript -->
+  <!-- Main container for content -->
+  <div id="mainContainer">
+    <!-- Top centered banner image -->
+    <img class="banner" src="/images/IMG_9061.jpeg" alt="Banner Image">
+
+    <!-- Container for dynamic volume images -->
+    <div class="volumes-container" id="volumesContainer">
+      <!-- Volume images will be inserted here by JavaScript -->
+    </div>
+
+    <!-- Promo banner image -->
+    <img class="banner" src="/images/promo.PNG" alt="Promo Image">
   </div>
 
   <script>
@@ -160,8 +198,5 @@
     // Start the dynamic loading process
     addVolume(volume);
   </script>
-
-  <!-- Bottom centered promo image -->
-  <img class="banner" src="/images/promo.PNG" alt="Promo Image">
 </body>
 </html>
