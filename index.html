@@ -19,7 +19,7 @@
       /* The container + borders = 750 + 40 = 790px total width. 
          Subtract that from 100% to get leftover width, then split in half. */
       width: calc((100% - 790px) / 2);
-      background: black no-repeat center;
+      background: black url('/images/bg.PNG') no-repeat center center;
       background-size: cover;
       z-index: -1;
     }
@@ -84,7 +84,7 @@
       display: block;
     }
 
-    /* Pastel blue oval button styles – scaled down */
+    /* Pastel blue oval button styles – scaled down, moved 200px to the left */
     .volume-button {
       background-color: #add8e6;
       border: none;
@@ -95,24 +95,8 @@
       font-family: "Open Sans", sans-serif;
       font-weight: bold;
       cursor: pointer;
-    }
-
-    /* Shop container styling for the new shop image and button overlay */
-    .shop-container {
       position: relative;
-      margin: 20px 0;
-    }
-    .shop-container img {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-    .shop-container .volume-button {
-      position: absolute;
-      top: 50%;
-      left: 0;
-      transform: translateY(-50%);
-      margin: 0; /* remove extra margin if needed */
+      left: -200px; /* Moves the button 200px to the left */
     }
 
     /* Media query for thin width devices (iPhone portrait etc.) – 2 per row */
@@ -147,12 +131,6 @@
 
     <!-- Promo banner image -->
     <img class="banner" src="/images/promo.PNG" alt="Promo Image">
-    
-    <!-- New Shop Section -->
-    <div class="shop-container">
-      <img src="/images/shop.png" alt="Shop Image">
-      <button class="volume-button" onclick="window.location.href='/shop.html'">Browse Merch</button>
-    </div>
   </div>
 
   <script>
@@ -198,8 +176,12 @@
         const btn = document.createElement('button');
         btn.textContent = 'Volume ' + volNumber;
         btn.className = 'volume-button';
+        /* 
+           Link changed to https://shop.patiencecave.com
+           This will override the volume-based link 
+        */
         btn.onclick = function() {
-          window.location.href = '/volume_' + volNumber + '.html';
+          window.location.href = 'https://shop.patiencecave.com';
         };
 
         // Append cover image and button to the volume item
