@@ -19,7 +19,7 @@
       /* The container + borders = 750 + 40 = 790px total width. 
          Subtract that from 100% to get leftover width, then split in half. */
       width: calc((100% - 790px) / 2);
-      background: black url('/images/bg.PNG') no-repeat center center;
+      background: black no-repeat center;
       background-size: cover;
       z-index: -1;
     }
@@ -52,6 +52,7 @@
       width: 100%;
       height: auto;
       display: block;
+      margin: 0; /* ensure no gap between images */
     }
 
     /* Container for volumes with padding */
@@ -84,7 +85,7 @@
       display: block;
     }
 
-    /* Pastel blue oval button styles – scaled down, moved 200px to the left */
+    /* Pastel blue oval button styles – scaled down */
     .volume-button {
       background-color: #add8e6;
       border: none;
@@ -95,8 +96,6 @@
       font-family: "Open Sans", sans-serif;
       font-weight: bold;
       cursor: pointer;
-      position: relative;
-      left: -200px; /* Moves the button 200px to the left */
     }
 
     /* Media query for thin width devices (iPhone portrait etc.) – 2 per row */
@@ -111,6 +110,23 @@
       .volume-item {
         width: calc((100% - 40px) / 4);
       }
+    }
+
+    /* Container for the promo and shop images */
+    #promo-shop {
+      padding: 0;
+      margin: 0;
+    }
+    /* Container for the shop image with button overlay */
+    .shop-container {
+      position: relative;
+    }
+    /* Position the "Browse Merch" button: vertically centered and moved 200px from left */
+    .shop-container .volume-button {
+      position: absolute;
+      top: 50%;
+      left: 200px;
+      transform: translateY(-50%);
     }
   </style>
 </head>
@@ -129,8 +145,16 @@
       <!-- Volume images will be inserted here by JavaScript -->
     </div>
 
-    <!-- Promo banner image -->
-    <img class="banner" src="/images/promo.PNG" alt="Promo Image">
+    <!-- Promo and Shop images container (share same border with mainContainer) -->
+    <div id="promo-shop">
+      <!-- Promo banner image -->
+      <img class="banner" src="/images/promo.PNG" alt="Promo Image">
+      <!-- Shop image with overlaid blue button -->
+      <div class="shop-container">
+        <img class="banner" src="/images/shop.png" alt="Shop Image">
+        <button class="volume-button" onclick="window.location.href='/merch.html'">Browse Merch</button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -176,12 +200,8 @@
         const btn = document.createElement('button');
         btn.textContent = 'Volume ' + volNumber;
         btn.className = 'volume-button';
-        /* 
-           Link changed to https://shop.patiencecave.com
-           This will override the volume-based link 
-        */
         btn.onclick = function() {
-          window.location.href = 'https://shop.patiencecave.com';
+          window.location.href = '/volume_' + volNumber + '.html';
         };
 
         // Append cover image and button to the volume item
