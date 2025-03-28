@@ -9,11 +9,13 @@
       margin: 0;
       padding: 0;
     }
-    /* Top banner image styles */
+    /* Top banner & promo image styles */
     .banner {
-      width: 100%;
+      width: 90%;
+      max-width: 500px; /* Limit maximum width */
       height: auto;
       display: block;
+      margin: 20px auto;
     }
     /* Container for volumes with a peach background */
     .volumes-container {
@@ -38,7 +40,7 @@
     /* Style for the cover image inside volume item */
     .volume-item img {
       width: 100%;
-      max-width: 500px; /* Limit maximum width to 500px */
+      max-width: 500px; /* Constrain cover image width */
       height: auto;
       display: block;
       margin: 0 auto;
@@ -159,6 +161,7 @@
     addVolume(volume);
   </script>
 
+  <!-- Bottom centered promo image -->
   <img class="banner" src="/images/promo.PNG" alt="Promo Image">
 </body>
 </html>
