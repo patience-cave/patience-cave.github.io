@@ -67,9 +67,9 @@
         const img = new Image();
         // Page images come from a folder with a dash in the volume 
         if (page == 0) {
-          img.sec = `/images/volume-${volume}/cover.PNG`;
+          img.sec = `/images/volume_${volume}/cover.PNG`;
         } else {
-          img.src = `/images/volume-${volume}/${page}.PNG`;
+          img.src = `/images/volume_${volume}/${page}.PNG`;
         };
         img.className = 'page-img';
 
