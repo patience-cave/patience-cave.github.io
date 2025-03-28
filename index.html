@@ -21,21 +21,19 @@
       padding: 20px;
       text-align: center;
     }
-    /* Row style to layout 3 items per row */
+    /* Row style to layout items */
     .volume-row {
       display: flex;
       justify-content: center;
+      flex-wrap: wrap;
       margin-bottom: 20px;
-    }
-    /* If a row has fewer than 3 items, align to left */
-    .incomplete-row {
-      justify-content: flex-start;
     }
     /* Container for each volume item (cover image + button) */
     .volume-item {
       margin: 0 10px;
       text-align: center;
-      width: 200px;
+      /* Default: 3 items per row */
+      width: calc((100% - 60px) / 3);
     }
     /* Style for the cover image inside volume item */
     .volume-item img {
@@ -43,26 +41,31 @@
       height: auto;
       display: block;
     }
-    /* Pastel blue oval button styles */
+    /* Pastel blue oval button styles – slightly bigger */
     .volume-button {
       background-color: #add8e6;
       border: none;
       border-radius: 25px;
-      padding: 10px 20px;
+      padding: 12px 24px;
       margin-top: 10px;
-      font-size: 16px;
+      font-size: 18px;
       font-family: "Open Sans";
       font-weight: bold;
       cursor: pointer;
     }
-    /* Smaller style for items in incomplete rows */
-    .incomplete-row .volume-item {
-      width: 150px;
+    /* Media query for thin width devices (iPhone portrait etc.) – 2 per row */
+    @media screen and (max-width: 480px) {
+      .volume-item {
+        width: calc((100% - 40px) / 2);
+      }
     }
-    .incomplete-row .volume-button {
-      font-size: 14px;
-      padding: 5px 10px;
+    /* Media query for wider screens (desktop) – 4 per row */
+    @media screen and (min-width: 1024px) {
+      .volume-item {
+        width: calc((100% - 80px) / 4);
+      }
     }
+    /* Removed the previous incomplete-row specific sizing */
   </style>
 </head>
 <body>
@@ -79,6 +82,16 @@
     const container = document.getElementById('volumesContainer');
     let currentRow = null;
     const maxVolumes = 10; // For testing; change as needed
+
+    // Determine the number of items per row based on window width
+    function getItemsPerRow() {
+      if (window.innerWidth <= 480) {
+        return 2;
+      } else if (window.innerWidth >= 1024) {
+        return 4;
+      }
+      return 3;
+    }
 
     function addVolume(volNumber) {
       // Create an image element to test if the volume exists (hidden from view)
@@ -114,8 +127,8 @@
         volumeItem.appendChild(coverImg);
         volumeItem.appendChild(btn);
 
-        // If no row exists or current row already has 3 items, start a new row
-        if (!currentRow || currentRow.childElementCount >= 3) {
+        // If no row exists or current row already has the max items, start a new row
+        if (!currentRow || currentRow.childElementCount >= getItemsPerRow()) {
           currentRow = document.createElement('div');
           currentRow.className = 'volume-row';
           container.appendChild(currentRow);
@@ -134,10 +147,6 @@
       testImg.onerror = function() {
         console.log('No image found for volume ' + volNumber + '. Stopping.');
         testImg.remove();
-        // If the last row has fewer than 3 items, mark it as incomplete
-        if (currentRow && currentRow.childElementCount < 3) {
-          currentRow.classList.add('incomplete-row');
-        }
       };
 
       // Append the test image to the DOM to trigger the load process
