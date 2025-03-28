@@ -49,14 +49,38 @@
     }
     const volume = volumeMatch ? volumeMatch[1] : '1';
 
-    // Set the background image using the folder with an underscore
-    const bgImagePath = `/images/volume_${volume}/bg.PNG`;
-    const bgImg = new Image();
-    bgImg.src = bgImagePath;
-    bgImg.onload = function() {
+    // List of possible image extensions.
+    const extensions = ['.PNG', '.png', '.JPG', '.jpg', '.JPEG', '.jpeg'];
+
+    // Function to try to load an image with different extensions.
+    function loadImageWithExtensions(basePath, onSuccess, onError) {
+      let index = 0;
+      function tryNext() {
+        if (index >= extensions.length) {
+          if (onError) onError();
+          return;
+        }
+        const currentPath = basePath + extensions[index];
+        const img = new Image();
+        img.onload = function() {
+          onSuccess(currentPath);
+        };
+        img.onerror = function() {
+          index++;
+          tryNext();
+        };
+        img.src = currentPath;
+      }
+      tryNext();
+    }
+
+    // Set the background image using the folder with an underscore.
+    const bgBasePath = `/images/volume_${volume}/bg`;
+    loadImageWithExtensions(bgBasePath, function(bgImagePath) {
       document.body.style.backgroundImage = `url('${bgImagePath}')`;
-    };
-    // If the image fails to load, we leave the darkgray background from CSS.
+    }, function() {
+      console.error('Background image not found.');
+    });
 
     // Function to sequentially add page images.
     window.addEventListener('DOMContentLoaded', function() {
@@ -64,32 +88,31 @@
       let page = 0;
 
       function addNextImage() {
-        const img = new Image();
-        // Page images come from a folder with a dash in the volume 
-        if (page == 0) {
-          img.sec = `/images/volume_${volume}/cover.PNG`;
+        let basePath;
+        if (page === 0) {
+          basePath = `/images/volume_${volume}/cover`;
         } else {
-          img.src = `/images/volume_${volume}/${page}.PNG`;
-        };
-        img.className = 'page-img';
+          basePath = `/images/volume_${volume}/${page}`;
+        }
+        loadImageWithExtensions(basePath, function(foundPath) {
+          const img = new Image();
+          img.src = foundPath;
+          img.className = 'page-img';
+          img.onload = function() {
+            container.appendChild(img);
 
-        img.onload = function() {
-          container.appendChild(img);
+            // Create and append a label underneath the image.
+            const label = document.createElement('div');
+            label.className = 'page-label';
+            label.textContent = `Page ${page}`;
+            container.appendChild(label);
 
-          // Create and append a label underneath the image.
-          const label = document.createElement('div');
-          label.className = 'page-label';
-          label.textContent = `Page ${page}`;
-          container.appendChild(label);
-
-          page++;
-          addNextImage(); // recursively add next image
-        };
-
-        // Stop adding images when one fails to load.
-        img.onerror = function() {
+            page++;
+            addNextImage(); // recursively add next image
+          };
+        }, function() {
           console.log(`No more images after Page ${page - 1}`);
-        };
+        });
       }
 
       addNextImage();
