@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -27,16 +27,24 @@
       justify-content: center;
       margin-bottom: 20px;
     }
-    /* Style for links inside rows */
-    .volume-row a {
-      margin: 0 10px;
-      text-decoration: none;
+    /* If a row has fewer than 3 buttons, align to left */
+    .incomplete-row {
+      justify-content: flex-start;
     }
-    /* Ensure volume images scale nicely */
-    .volume-row img {
-      max-width: 100%;
-      height: auto;
-      display: block;
+    /* Pastel blue oval button styles */
+    .volume-button {
+      background-color: #add8e6;
+      border: none;
+      border-radius: 25px;
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    /* Smaller style for buttons in incomplete rows */
+    .incomplete-row .volume-button {
+      font-size: 14px;
+      padding: 5px 10px;
     }
   </style>
 </head>
@@ -55,38 +63,55 @@
     let currentRow = null;
 
     function addVolume(volNumber) {
-      // Create a new anchor and image element for this volume
-      const link = document.createElement('a');
-      link.href = '/volume_' + volNumber + '.html';
-
+      // Create an image element to test if the volume exists (hidden from view)
       const img = document.createElement('img');
       //img.src = '/images/volume_' + volNumber + '/cover.PNG';
       img.src = '/images/volume_1/cover.PNG';
       img.alt = 'Volume ' + volNumber;
+      img.style.display = 'none';
 
-      // When the image loads, append it and then try loading the next volume
+      // When the image loads, create the corresponding button
       img.onload = function() {
-        // If no row exists or current row already has 3 images, start a new row
+        // Remove the test image from the DOM
+        img.remove();
+
+        // Create a pastel blue oval button for this volume
+        const btn = document.createElement('button');
+        btn.textContent = 'Volume ' + volNumber;
+        btn.className = 'volume-button';
+        btn.onclick = function() {
+          window.location.href = '/volume_' + volNumber + '.html';
+        };
+
+        // If no row exists or current row already has 3 buttons, start a new row
         if (!currentRow || currentRow.childElementCount >= 3) {
           currentRow = document.createElement('div');
           currentRow.className = 'volume-row';
           container.appendChild(currentRow);
         }
-        // Append the linked image to the current row
-        currentRow.appendChild(link);
-        link.appendChild(img);
+        // Append the button to the current row
+        currentRow.appendChild(btn);
 
         // Increment and attempt to load the next volume
         volume++;
-        if (volume<(1+10)) {
+        if (volume < (1 + 10)) {
           addVolume(volume);
-        };
+        }
       };
 
       // If the image fails to load, stop processing further volumes
       img.onerror = function() {
         console.log('No image found for volume ' + volNumber + '. Stopping.');
+        // Remove the test image from the DOM
+        img.remove();
+        // If the last row has fewer than 3 buttons, mark it as incomplete
+        if (currentRow && currentRow.childElementCount < 3) {
+          currentRow.classList.add('incomplete-row');
+        }
       };
+
+      // Append the hidden image to the DOM to trigger the load process
+      document.body.appendChild(img);
     }
 
     // Start the dynamic loading process
@@ -94,4 +119,3 @@
   </script>
 </body>
 </html>
-
