@@ -81,7 +81,7 @@
     let volume = 1; // start with volume 1
     const container = document.getElementById('volumesContainer');
     let currentRow = null;
-    const maxVolumes = 10; // For testing; change as needed
+    const maxVolumes = 100; // For testing; change as needed
 
     // Determine the number of items per row based on window width
     function getItemsPerRow() {
@@ -96,8 +96,8 @@
     function addVolume(volNumber) {
       // Create an image element to test if the volume exists (hidden from view)
       const testImg = document.createElement('img');
-      //testImg.src = '/images/volume_' + volNumber + '/cover.PNG';
-      testImg.src = '/images/volume_1/cover.PNG';
+      testImg.src = '/images/volume_' + volNumber + '/cover.PNG';
+      //testImg.src = '/images/volume_1/cover.PNG';
       testImg.alt = 'Volume ' + volNumber;
       testImg.style.display = 'none';
 
