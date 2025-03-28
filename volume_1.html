@@ -9,7 +9,7 @@
       margin: 0;
       padding: 0;
       background-color: darkgray; /* default if bg image not available */
-      background-repeat: repeat;
+      background-repeat: no-repeat;
       background-size: cover;
       background-attachment: fixed;
       background-position: center;
@@ -81,6 +81,10 @@
     const bgBasePath = `/images/volume_${volume}/bg`;
     loadImageWithExtensions(bgBasePath, function(bgImagePath) {
       document.body.style.backgroundImage = `url('${bgImagePath}')`;
+      document.body.style.backgroundImage = `url('${bgImagePath}')`;
+      document.body.style.backgroundSize = "cover";
+      document.body.style.backgroundAttachment = "fixed";
+      document.body.style.backgroundPosition = "center";
     }, function() {
       console.error('Background image not found.');
     });
