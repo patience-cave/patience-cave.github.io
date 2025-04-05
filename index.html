@@ -4,88 +4,87 @@
   <meta charset="UTF-8">
   <title>The Patience Cave</title>
   <style>
-    /* Remove default margin/padding and set a fallback background */
+    /* Reset margins/padding; fallback background */
     html, body {
       margin: 0;
       padding: 0;
-      background-color: black; /* fallback if side BG image doesn't load */
+      background-color: black;
     }
-
-    /* Side background divs for left/right sides */
+    
+    /* Side background styles */
     .side-bg {
       position: fixed;
       top: 0;
       bottom: 0;
-      /* The container + borders = 750 + 40 = 790px total width. 
-         Subtract that from 100% to get leftover width, then split in half. */
       width: calc((100% - 790px) / 2);
       background: black no-repeat center;
       background-size: cover;
       z-index: -1;
     }
-    #side-left {
-      left: 0;
-    }
-    #side-right {
-      right: 0;
-    }
-
-    /* Hide side backgrounds on small screens */
+    #side-left { left: 0; }
+    #side-right { right: 0; }
+    
     @media screen and (max-width: 810px) {
-      .side-bg {
-        display: none;
-      }
+      .side-bg { display: none; }
     }
-
-    /* Main container centered with max width 750px content + 20px border on all sides */
+    
+    /* Main content container */
     #mainContainer {
       max-width: 750px;
       width: 100%;
       margin: 0 auto;
       border: 20px solid black;
-      background-color: #FFDAB9; /* Peach background for container content */
-      box-sizing: border-box;     /* So padding/border behave more predictably */
+      background-color: #FFDAB9;
+      box-sizing: border-box;
     }
-
-    /* Top banner image styles */
+    
+    /* Banner image style */
     .banner {
       width: 100%;
       height: auto;
       display: block;
-      margin: 0; /* ensure no gap between images */
+      margin: 0;
     }
-
-    /* Container for volumes with padding */
+    
+    /* Volumes container with smooth adjustment */
     .volumes-container {
       padding: 20px;
       text-align: center;
+      transition: all 0.5s ease;
     }
-
-    /* Row style to layout items */
+    
+    /* Layout for rows of volumes */
     .volume-row {
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
       margin-bottom: 20px;
     }
-
-    /* Container for each volume item (cover image + button) */
+    
+    /* Volume item starts hidden and slightly shifted */
     .volume-item {
-      margin: 0 5px;  /* Reduced margin for larger cover images */
+      margin: 0 5px;
       text-align: center;
-      /* Default: 3 items per row */
       width: calc((100% - 30px) / 3);
       box-sizing: border-box;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
     }
-
-    /* Style for the cover image inside volume item */
+    /* Once visible, the item fades in and moves into place */
+    .volume-item.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    /* Cover image style */
     .volume-item img {
       width: 100%;
       height: auto;
       display: block;
     }
-
-    /* Pastel blue oval button styles – scaled down */
+    
+    /* Pastel blue oval button */
     .volume-button {
       background-color: #add8e6;
       border: none;
@@ -97,31 +96,30 @@
       font-weight: bold;
       cursor: pointer;
     }
-
-    /* Media query for thin width devices (iPhone portrait etc.) – 2 per row */
+    
+    /* Responsive layout: 2 per row on small screens */
     @media screen and (max-width: 480px) {
       .volume-item {
         width: calc((100% - 20px) / 2);
       }
     }
-
-    /* Media query for wider screens (desktop) – 4 per row */
+    
+    /* Responsive layout: 4 per row on large screens */
     @media screen and (min-width: 1024px) {
       .volume-item {
         width: calc((100% - 40px) / 4);
       }
     }
-
-    /* Container for the promo and shop images */
+    
+    /* Promo and shop images */
     #promo-shop {
       padding: 0;
       margin: 0;
     }
-    /* Container for the shop image with button overlay */
     .shop-container {
       position: relative;
     }
-    /* Position the "Browse Merch" button: vertically centered and moved 200px from left */
+    /* Position the shop button */
     .shop-container .volume-button {
       position: absolute;
       top: 50%;
@@ -135,21 +133,19 @@
   <div id="side-left" class="side-bg"></div>
   <div id="side-right" class="side-bg"></div>
 
-  <!-- Main container for content -->
+  <!-- Main container -->
   <div id="mainContainer">
-    <!-- Top centered banner image -->
+    <!-- Top banner image -->
     <img class="banner" src="/images/IMG_9061.jpeg" alt="Banner Image">
 
     <!-- Container for dynamic volume images -->
     <div class="volumes-container" id="volumesContainer">
-      <!-- Volume images will be inserted here by JavaScript -->
+      <!-- Volume items will be inserted here dynamically -->
     </div>
 
-    <!-- Promo and Shop images container (share same border with mainContainer) -->
+    <!-- Promo and Shop section -->
     <div id="promo-shop">
-      <!-- Promo banner image -->
       <img class="banner" src="/images/promo.PNG" alt="Promo Image">
-      <!-- Shop image with overlaid blue button -->
       <div class="shop-container">
         <img class="banner" src="/images/shop.png" alt="Shop Image">
         <button class="volume-button" onclick="window.location.href='https://shop.patiencecave.com'">Browse Merch</button>
@@ -158,37 +154,31 @@
   </div>
 
   <script>
-    let volume = 1; // start with volume 1
+    let volume = 1; // Start at volume 1
     const container = document.getElementById('volumesContainer');
     let currentRow = null;
-    const maxVolumes = 100; // For testing; change as needed
+    const maxVolumes = 100; // Adjust as needed
 
-    // Determine the number of items per row based on window width
+    // Determine items per row based on window width
     function getItemsPerRow() {
-      if (window.innerWidth <= 480) {
-        return 2;
-      } else if (window.innerWidth >= 1024) {
-        return 4;
-      }
+      if (window.innerWidth <= 480) return 2;
+      if (window.innerWidth >= 1024) return 4;
       return 3;
     }
 
     function addVolume(volNumber) {
-      // Create an image element to test if the volume exists (hidden from view)
+      // Create a test image to check if the volume exists
       const testImg = document.createElement('img');
       testImg.src = '/images/volume_' + volNumber + '/cover.PNG';
       testImg.alt = 'Volume ' + volNumber;
       testImg.style.display = 'none';
 
-      // When the image loads, create the volume item with visible cover and button
+      // On successful load, build the volume item
       testImg.onload = function() {
         testImg.remove();
-
-        // Create container for the volume item
         const volumeItem = document.createElement('div');
         volumeItem.className = 'volume-item';
-
-        // Create the cover image element (visible)
+        
         const coverImg = document.createElement('img');
         coverImg.src = '/images/volume_' + volNumber + '/cover.PNG';
         coverImg.alt = 'Volume ' + volNumber;
@@ -196,7 +186,6 @@
           window.location.href = '/volume_' + volNumber + '.html';
         };
 
-        // Create the pastel blue oval button
         const btn = document.createElement('button');
         btn.textContent = 'Volume ' + volNumber;
         btn.className = 'volume-button';
@@ -204,37 +193,39 @@
           window.location.href = '/volume_' + volNumber + '.html';
         };
 
-        // Append cover image and button to the volume item
         volumeItem.appendChild(coverImg);
         volumeItem.appendChild(btn);
 
-        // If no row exists or current row already has the max items, start a new row
+        // Start a new row if necessary
         if (!currentRow || currentRow.childElementCount >= getItemsPerRow()) {
           currentRow = document.createElement('div');
           currentRow.className = 'volume-row';
           container.appendChild(currentRow);
         }
-        // Append the volume item to the current row
         currentRow.appendChild(volumeItem);
 
-        // Increment and attempt to load the next volume
+        // Use a slight delay to trigger the fade-in effect
+        setTimeout(() => {
+          volumeItem.classList.add('visible');
+        }, 50);
+
         volume++;
         if (volNumber < maxVolumes) {
           addVolume(volume);
         }
       };
 
-      // If the image fails to load, stop processing further volumes
+      // Stop if image does not exist
       testImg.onerror = function() {
         console.log('No image found for volume ' + volNumber + '. Stopping.');
         testImg.remove();
       };
 
-      // Append the test image to the DOM to trigger the load process
+      // Append the test image to trigger loading
       document.body.appendChild(testImg);
     }
 
-    // Start the dynamic loading process
+    // Begin dynamic loading of volumes
     addVolume(volume);
   </script>
 </body>
