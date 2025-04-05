@@ -169,7 +169,7 @@
     function addVolume(volNumber) {
       // Create a test image to check if the volume exists
       const testImg = document.createElement('img');
-      testImg.src = '/images/volume_' + volNumber + '/cover.PNG';
+      testImg.src = '/images/volume_' + volNumber + '/cover.webp';
       testImg.alt = 'Volume ' + volNumber;
       testImg.style.display = 'none';
 
@@ -180,7 +180,7 @@
         volumeItem.className = 'volume-item';
         
         const coverImg = document.createElement('img');
-        coverImg.src = '/images/volume_' + volNumber + '/cover.PNG';
+        coverImg.src = '/images/volume_' + volNumber + '/cover.webp';
         coverImg.alt = 'Volume ' + volNumber;
         coverImg.onclick = function() {
           window.location.href = '/volume_' + volNumber + '.html';
