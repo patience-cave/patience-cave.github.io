@@ -95,13 +95,6 @@ return null;}
 /*************************************************
  *  UI + Gameplay                               *
  *************************************************/
-
-    function updateOgDescription() {
-      const desc = `Share and solve sliding-balls logic puzzle. Can you finish this ${game.w}X${game.h} puzzle in ${game.minSwipes} moves?`;
-      const meta = document.querySelector('meta[property="og:description"]');
-      if (meta) meta.setAttribute('content', desc);
-    }
-
 (function(){
   const qs=id=>document.getElementById(id);
   const canvas=qs('board');
@@ -110,8 +103,7 @@ return null;}
   let cellSize=32; // will adjust
   let game={};
   /* PARAMS */
-
-
+  
   function defaultParams() {
     return {
       w: +qs('width').value || 10,
@@ -171,11 +163,14 @@ return null;}
       balls: decState(puzzle.start),
       swipes: 0
     };
-    updateOgDescription()
 
     qs('seed').value = game.seed;
-
     qs('error').textContent = '';
+
+
+    const desc = `Share and solve sliding-balls logic puzzle. Can you finish this ${params.w}X${params.h} puzzle in ${puzzle.minSwipes} moves?`;
+    const meta = document.querySelector('meta[property="og:description"]');
+    if (meta) meta.setAttribute('content', desc);
 
     fitCanvas();
     drawBoard();
@@ -439,8 +434,6 @@ function attemptMove(dir) {
   function loadFromURL(){const url=new URL(window.location.href);if(url.searchParams.has('w')){qs('width').value=url.searchParams.get('w');qs('wVal').textContent=url.searchParams.get('w');}if(url.searchParams.has('h')){qs('height').value=url.searchParams.get('h');qs('hVal').textContent=url.searchParams.get('h');}if(url.searchParams.has('k')){qs('players').value=url.searchParams.get('k');qs('pVal').textContent=url.searchParams.get('k');}if(url.searchParams.has('seed')){qs('seed').value=url.searchParams.get('seed');}if(url.searchParams.has('palette')){const col='#'+url.searchParams.get('palette');qs('palette').value=col;document.documentElement.style.setProperty('--floor',col);} }
   loadFromURL();
   makePuzzle(defaultParams());
-
-
 })();
 </script>
 </body>
