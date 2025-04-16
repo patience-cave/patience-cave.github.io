@@ -12,6 +12,12 @@
   <meta name="twitter:title" content="Patience Puzzle">
   <meta name="twitter:description" content="Test your patience with these sliding logic puzzles. Can you finish in the minimum moves?">
   <meta name="twitter:image" content="https://patiencecave.com/assets/patience_puzzle_og.webp">
+  
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+  rel="stylesheet"
+/>
+
   <style>
     :root{
       --floor:#87b5ff; /* soft blue default */
@@ -22,12 +28,106 @@
     html,body{margin:0;height:100%;background:#000;color:#fff;font-family:system-ui,Arial,sans-serif;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;}
     h1{margin:12px 0 8px;font-size:2rem;letter-spacing:2px;text-transform:uppercase;}
     #stats{margin-bottom:8px;font-size:0.95rem;}
-    #game-container{position:relative;flex:1;width:100%;max-width:640px;max-height:640px;display:flex;align-items:center;justify-content:center;}
+     html, body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+h1 {
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--primary);
+}
+
+#game-container {
+    position: relative;
+    flex: 3;            /* was 1 */
+    width: 100%;
+    max-width: none;    /* lift the 640px cap */
+    max-height: none;   /* lift the 640px cap */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+
+
     canvas{touch-action:none;max-width:100%;max-height:100%;background:#000;display:block;}
     /* On‑screen controls */
-    #controls{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0;}
-    .btn{background:#222;border:1px solid #555;border-radius:12px;padding:6px 12px;font-size:1rem;color:#fff;cursor:pointer;user-select:none;transition:transform 0.1s;}
-    .btn:active{transform:scale(0.93);}    
+    
+
+#controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+/* D‑pad grid */
+#dpad {
+  display: grid;
+  grid-template-areas:
+    ". up    ."
+    "left . right"
+    ". down  .";
+  grid-template-columns: 40px 40px 40px;
+  grid-template-rows: 40px 40px 40px;
+  gap: 8px;
+}
+
+/* place each arrow */
+#btnUp    { grid-area: up;    }
+#btnDown  { grid-area: down;  }
+#btnLeft  { grid-area: left;  }
+#btnRight { grid-area: right; }
+
+/* make arrows larger & centered */
+  
+.btn.arrow {
+  width: 48px;    /* was 60px */
+  height: 48px;   /* was 60px */
+  padding: 0.5em;
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+
+/* Restart/Share row */
+#other-controls {
+  display: flex;
+  gap: 8px;
+}
+
+
+.btn {
+  background-color: #fff
+  color: #000;              /* or #fff if you prefer high‑contrast */
+  border: none;
+  border-radius: var(--btn-radius);
+  padding: 0.6em 1.2em;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease,
+    box-shadow 0.2s ease;
+}
+
+.btn:hover {
+  background-color: #666
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+
+
     /* Generator panel */
     #generator{padding:16px;width:100%;max-width:640px;background:#111;border-top:1px solid #333;overflow:auto;}
     #generator h2{margin:0 0 12px;font-size:1.1rem;}
@@ -45,13 +145,18 @@
   <h1>Patience Puzzle</h1>
   <div id="stats">0 / 0 swipes</div>
   <div id="game-container"><canvas id="board"></canvas></div>
-  <div id="controls">
-    <button class="btn" id="btnUp">⬆︎</button>
-    <button class="btn" id="btnLeft">⬅︎</button>
-    <button class="btn" id="btnDown">⬇︎</button>
-    <button class="btn" id="btnRight">➡︎</button>
-    <button class="btn" id="btnRestart">Restart</button>
-    <button class="btn" id="btnShare">Share</button>
+    <div id="controls">
+    <div id="dpad">
+      <button class="btn arrow" id="btnUp">⬆︎</button>
+      <button class="btn arrow" id="btnLeft">⬅︎</button>
+      <button class="btn arrow" id="btnDown">⬇︎</button>
+      <button class="btn arrow" id="btnRight">➡︎</button>
+    </div>
+    <div id="other-controls">
+      <button class="btn" id="btnRestart">Restart</button>
+      <button class="btn" id="btnShare">Share</button>
+      <button class="btn" id="btnRandom">Random</button>
+    </div>
   </div>
   <div id="generator">
     <h2>Generate your own puzzle</h2>
@@ -435,6 +540,18 @@ function attemptMove(dir) {
   qs('btnGenerate').onclick=()=>{const params=defaultParams();makePuzzle(params);updateStats();};
   /* Share */
   qs('btnShare').onclick=()=>{const url=new URL(window.location.href);url.searchParams.set('w',game.w);url.searchParams.set('h',game.h);url.searchParams.set('k',game.k);url.searchParams.set('seed',game.seed);url.searchParams.set('palette',qs('palette').value.substring(1));navigator.clipboard.writeText(url.toString()).then(()=>alert('Link copied! Share away.'));};
+
+    /* new Random handler */
+    qs('btnRandom').onclick = () => {
+      // first pick a new seed
+      qs('btnSeed').click();
+      // then regenerate with that seed
+      const params = defaultParams();
+      makePuzzle(params);
+      updateStats();
+    };
+
+
   /* URL Parameters */
   function loadFromURL(){const url=new URL(window.location.href);if(url.searchParams.has('w')){qs('width').value=url.searchParams.get('w');qs('wVal').textContent=url.searchParams.get('w');}if(url.searchParams.has('h')){qs('height').value=url.searchParams.get('h');qs('hVal').textContent=url.searchParams.get('h');}if(url.searchParams.has('k')){qs('players').value=url.searchParams.get('k');qs('pVal').textContent=url.searchParams.get('k');}if(url.searchParams.has('seed')){qs('seed').value=url.searchParams.get('seed');}if(url.searchParams.has('palette')){const col='#'+url.searchParams.get('palette');qs('palette').value=col;document.documentElement.style.setProperty('--floor',col);} }
   loadFromURL();
