@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Patience Puzzle</title>
+<!-- OpenGraph defaults (will be overwritten by share links generated client‑side) -->
+<meta property="og:title" content="Patience Puzzle" />
+<meta property="og:description" content="Test your patience on this sliding‑ball puzzle." />
+<meta property="og:image" content="https://patiencecave.com/assets/patience_puzzle_default.png" />
+<style>
+  :root {
+    --board-bg: #a8d0fa; /* soft blue (can be replaced by color‑picker) */
+    --ball-color: #ffffff;
+    --wall-color: #000000;
+    --cell-size: min(6vmin, 40px);
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #000;
+    color: #ffffff;
+    font-family: system-ui, sans-serif;
+    height: 100%;
+    overflow: hidden; /* no scrolling */
+  }
+  #app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+  }
+  h1 {
+    margin: 0.5rem 0 0 0;
+    font-size: 1.6rem;
+    letter-spacing: 0.05em;
+  }
+  #board-wrapper {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+  #board {
+    display: grid;
+    background: var(--board-bg);
+    padding: 0.25rem;
+    border-radius: 0.5rem;
+    box-sizing: content-box;
+    touch-action: none; /* allow custom swipe gestures */
+  }
+  .cell {
+    width: var(--cell-size);
+    height: var(--cell-size);
+    position: relative;
+    box-sizing: border-box;
+  }
+  .wall {
+    background: var(--wall-color);
+  }
+  .ball {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 80%;
+    height: 80%;
+    transform: translate(-50%, -50%);
+    background: var(--ball-color);
+    border-radius: 50%;
+    transition: transform 0.2s ease-in-out;
+    pointer-events: none;
+  }
+  .goal-orb {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40%;
+    height: 40%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: var(--wall-color);
+    overflow: visible;
+  }
+  .goal-orb::before {
+    content: "";
+    position: absolute;
+    inset: -20%;
+    border-radius: 50%;
+    border: 2px solid var(--ball-color);
+  }
+  .pulse {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: var(--ball-color);
+    opacity: 0.4;
+    transform: translate(-50%, -50%) scale(0);
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse {
+    from { transform: translate(-50%, -50%) scale(0); opacity: 0.4; }
+    to   { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+  }
+  /* Controls */
+  #controls {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .btn {
+    background: #222;
+    color: #fff;
+    border: 1px solid #555;
+    padding: 0.3rem 0.6rem;
+    border-radius: 0.3rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  #config-panel {
+    background: #111;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    max-width: 600px;
+  }
+  label { font-size: 0.8rem; white-space: nowrap; }
+  input[type="range"], input[type="number"], input[type="color"] {
+    accent-color: #aaa; /* pastel accent */
+  }
+  #error-msg { color: #f55; margin-top: 0.5rem; }
+</style>
+</head>
+<body>
+<div id="app">
+  <h1>Patience Puzzle <button id="share" class="btn">Share 🔗</button></h1>
+  <div id="stats">Moves: <span id="moves">0</span> / Optimal: <span id="optimal">0</span></div>
+  <div id="board-wrapper"><div id="board"></div></div>
+  <div id="controls">
+    <button class="btn" data-dir="U">⬆︎</button>
+    <button class="btn" data-dir="L">⬅︎</button>
+    <button class="btn" data-dir="D">⬇︎</button>
+    <button class="btn" data-dir="R">➡︎</button>
+    <button class="btn" id="restart">Restart ♻︎</button>
+  </div>
+  <details id="config-panel">
+    <summary style="cursor:pointer">Generate your own puzzle</summary>
+    <div class="slider-row">
+      <label>Width <input id="wRange" type="range" min="2" max="100" value="10"></label>
+      <label id="wLabel">10</label>
+    </div>
+    <div class="slider-row">
+      <label>Height <input id="hRange" type="range" min="2" max="100" value="10"></label>
+      <label id="hLabel">10</label>
+    </div>
+    <div class="slider-row">
+      <label>Walls % <input id="pRange" type="range" min="0" max="100" value="25"></label>
+      <label id="pLabel">25%</label>
+    </div>
+    <div class="slider-row">
+      <label>Balls <input id="kRange" type="range" min="1" max="5" value="2"></label>
+      <label id="kLabel">2</label>
+    </div>
+    <div class="slider-row">
+      <label>No dead ends <input id="deadToggle" type="checkbox" checked></label>
+    </div>
+    <div class="slider-row">
+      Metric:
+      <label><input type="radio" name="metric" value="diameter" checked> Most Swipes</label>
+      <label><input type="radio" name="metric" value="absorption"> Hard to Solve</label>
+      <label><input type="radio" name="metric" value="optimal"> Hard to Perfect</label>
+    </div>
+    <div class="slider-row">
+      <label>Seed <input id="seedInput" type="number" value="1234"></label>
+      <button id="newSeed" class="btn">New Seed 🎲</button>
+    </div>
+    <div class="slider-row">
+      <label>Paint <input id="paintToggle" type="checkbox"></label>
+      <label>Board color <input type="color" id="colorPick" value="#a8d0fa"></label>
+    </div>
+    <button id="regenerate" class="btn">Regenerate 🔄</button>
+    <div id="error-msg" hidden>Invalid board. Adjust parameters or choose a new seed.</div>
+  </details>
+</div>
+<script>
+(() => {
+  ////////////////////////////////////////////////////////////////////////////
+  // Utility helpers
+  ////////////////////////////////////////////////////////////////////////////
+  const DIRS = { U: [-1, 0], D: [1, 0], L: [0, -1], R: [0, 1] };
+  const OPP = { U: 'D', D: 'U', L: 'R', R: 'L' };
+
+  function rnd(seed) {
+    let s = seed >>> 0;
+    return () => (s = (s * 1664525 + 1013904223) >>> 0) / 2 ** 32;
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  // Board + State generation (logic ported from Python)
+  ////////////////////////////////////////////////////////////////////////////
+  function randomBoard(w, h, p, seed, keepBorder = true) {
+    const rand = rnd(seed);
+    const rows = [];
+    for (let r = 0; r < h; r++) {
+      let row = '';
+      for (let c = 0; c < w; c++) {
+        if (keepBorder && (r === 0 || r === h - 1 || c === 0 || c === w - 1)) row += '#';
+        else row += rand() < p ? '#' : '.';
+      }
+      rows.push(row);
+    }
+    return rows;
+  }
+
+  function rayTable(board) {
+    const h = board.length, w = board[0].length;
+    const ray = new Map();
+    for (let r = 0; r < h; r++) {
+      for (let c = 0; c < w; c++) {
+        if (board[r][c] === '#') continue;
+        for (const d in DIRS) {
+          const [dr, dc] = DIRS[d];
+          let nr = r, nc = c;
+          while (0 <= nr + dr && nr + dr < h && 0 <= nc + dc && nc + dc < w && board[nr + dr][nc + dc] !== '#') {
+            nr += dr; nc += dc;
+          }
+          ray.set(`${r},${c},${d}`, [nr, nc]);
+        }
+      }
+    }
+    return ray;
+  }
+
+  function applyMove(state, d, ray) {
+    const [dr, dc] = DIRS[d];
+    const order = [...state].sort((a, b) => (a[0] * dr + a[1] * dc) - (b[0] * dr + b[1] * dc)).reverse();
+    const occ = new Set(state.map(v => v.toString()));
+    const moved = [];
+    for (const v of order) {
+      const [wr, wc] = ray.get(`${v[0]},${v[1]},${d}`);
+      let nr = wr, nc = wc;
+      while (occ.has(`${nr},${nc}`) && (nr !== v[0] || nc !== v[1])) {
+        nr -= dr; nc -= dc;
+      }
+      moved.push([nr, nc]);
+      occ.delete(v.toString());
+      occ.add(`${nr},${nc}`);
+    }
+    return moved.sort();
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  // Simple BFS diameter (single ball only – practical for browser).
+  ////////////////////////////////////////////////////////////////////////////
+  function bfs(start, ray) {
+    const queue = [start];
+    const dist = new Map([[start.toString(), 0]]);
+    while (queue.length) {
+      const s = queue.shift();
+      const d0 = dist.get(s.toString());
+      for (const dir in DIRS) {
+        const ns = applyMove([s], dir, ray)[0];
+        const key = ns.toString();
+        if (!dist.has(key)) {
+          dist.set(key, d0 + 1);
+          queue.push(ns);
+        }
+      }
+    }
+    return dist;
+  }
+
+  function diameter(board) {
+    // For performance, restrict to single‑ball diameter only.
+    const floors = [];
+    board.forEach((row, r) => row.split('').forEach((ch, c) => { if (ch === '.') floors.push([r, c]); }));
+    const start = floors[0];
+    const ray = rayTable(board);
+    const d1 = bfs(start, ray);
+    const far1 = [...d1.entries()].reduce((a, b) => b[1] > a[1] ? b : a)[0].split(',').map(Number);
+    const d2 = bfs(far1, ray);
+    const far2 = [...d2.entries()].reduce((a, b) => b[1] > a[1] ? b : a)[0].split(',').map(Number);
+    return { start: far1, goal: far2, dist: d2.get(far2.toString()) };
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  // Rendering & Game State
+  ////////////////////////////////////////////////////////////////////////////
+  const boardEl = document.getElementById('board');
+  const movesEl = document.getElementById('moves');
+  const optEl = document.getElementById('optimal');
+  const errorEl = document.getElementById('error-msg');
+
+  let board = [];
+  let ray = null;
+  let balls = [];
+  let goal = [];
+  let moves = 0;
+
+  const params = {
+    w: 10, h: 10, p: 0.25, k: 2, seed: 1234,
+    metric: 'diameter', noDead: true
+  };
+
+  function updateSlidersUI() {
+    wLabel.textContent = params.w;
+    hLabel.textContent = params.h;
+    pLabel.textContent = Math.round(params.p * 100) + '%';
+    kLabel.textContent = params.k;
+    seedInput.value = params.seed;
+  }
+
+  function buildBoard() {
+    try {
+      board = randomBoard(params.w, params.h, params.p, params.seed);
+      ray = rayTable(board);
+      // quick check floor count
+      const floorCount = board.join('').split('.').length - 1;
+      if (floorCount < params.k) throw new Error('Not enough floor tiles.');
+
+      // For simplicity compute diameter with 1 ball and place other balls at same start (random offset) – ok for demo.
+      const dia = diameter(board);
+      balls = [dia.start];
+      while (balls.length < params.k) {
+        // pick random floor not occupied yet
+        const randPos = randomFloor();
+        if (!balls.some(b => b[0] === randPos[0] && b[1] === randPos[1])) balls.push(randPos);
+      }
+      goal = [dia.goal];
+      optEl.textContent = dia.dist || 0;
+      moves = 0;
+      movesEl.textContent = moves;
+      renderBoard();
+      errorEl.hidden = true;
+    } catch (e) {
+      boardEl.innerHTML = '';
+      errorEl.hidden = false;
+      console.error(e);
+    }
+  }
+
+  function randomFloor() {
+    const floors = [];
+    board.forEach((row, r) => row.split('').forEach((ch, c) => { if (ch === '.') floors.push([r, c]); }));
+    return floors[Math.floor(Math.random() * floors.length)];
+  }
+
+  function renderBoard() {
+    boardEl.style.setProperty('grid-template-columns', `repeat(${params.w}, var(--cell-size))`);
+    boardEl.style.setProperty('grid-template-rows', `repeat(${params.h}, var(--cell-size))`);
+    boardEl.innerHTML = '';
+
+    for (let r = 0; r < params.h; r++) {
+      for (let c = 0; c < params.w; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        if (board[r][c] === '#') cell.classList.add('wall');
+        cell.dataset.row = r; cell.dataset.col = c;
+        boardEl.appendChild(cell);
+      }
+    }
+    for (const g of goal) placeGoalOrb(g);
+    for (const b of balls) placeBall(b);
+  }
+
+  function placeBall(pos) {
+    const idx = pos[0] * params.w + pos[1];
+    const cell = boardEl.children[idx];
+    let ball = cell.querySelector('.ball');
+    if (!ball) {
+      ball = document.createElement('div');
+      ball.className = 'ball';
+      cell.appendChild(ball);
+    }
+  }
+
+  function placeGoalOrb(pos) {
+    const idx = pos[0] * params.w + pos[1];
+    const cell = boardEl.children[idx];
+    const orb = document.createElement('div');
+    orb.className = 'goal-orb';
+    const pulse = document.createElement('div');
+    pulse.className = 'pulse';
+    orb.appendChild(pulse);
+    cell.appendChild(orb);
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  // Movement
+  ////////////////////////////////////////////////////////////////////////////
+  function doMove(dir) {
+    if (!board.length) return;
+    const newBalls = applyMove(balls, dir, ray);
+    // Check changes
+    if (JSON.stringify(newBalls) === JSON.stringify(balls)) return; // no move
+    balls = newBalls;
+    moves++;
+    movesEl.textContent = moves;
+
+    // animate:
+    const cells = [...boardEl.children];
+    cells.forEach(c => c.querySelector('.ball')?.remove());
+    for (const b of balls) placeBall(b);
+  }
+
+  document.addEventListener('keydown', e => {
+    const keyMap = { ArrowUp: 'U', ArrowDown: 'D', ArrowLeft: 'L', ArrowRight: 'R', w: 'U', s: 'D', a: 'L', d: 'R' };
+    if (keyMap[e.key]) { e.preventDefault(); doMove(keyMap[e.key]); }
+  });
+
+  document.querySelectorAll('#controls [data-dir]').forEach(btn => {
+    btn.addEventListener('click', () => doMove(btn.dataset.dir));
+  });
+  restart.addEventListener('click', buildBoard);
+
+  // Touch swipes
+  let touchStart = null;
+  boardEl.addEventListener('touchstart', e => touchStart = e.touches[0]);
+  boardEl.addEventListener('touchend', e => {
+    if (!touchStart) return;
+    const end = e.changedTouches[0];
+    const dx = end.clientX - touchStart.clientX;
+    const dy = end.clientY - touchStart.clientY;
+    if (Math.abs(dx) + Math.abs(dy) < 20) return;
+    const dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'R' : 'L') : (dy > 0 ? 'D' : 'U');
+    doMove(dir);
+    touchStart = null;
+  });
+
+  ////////////////////////////////////////////////////////////////////////////
+  // Config panel
+  ////////////////////////////////////////////////////////////////////////////
+  const wRange = document.getElementById('wRange');
+  const hRange = document.getElementById('hRange');
+  const pRange = document.getElementById('pRange');
+  const kRange = document.getElementById('kRange');
+  const wLabel = document.getElementById('wLabel');
+  const hLabel = document.getElementById('hLabel');
+  const pLabel = document.getElementById('pLabel');
+  const kLabel = document.getElementById('kLabel');
+  const seedInput = document.getElementById('seedInput');
+  const newSeedBtn = document.getElementById('newSeed');
+  const deadToggle = document.getElementById('deadToggle');
+  const metricRadios = document.querySelectorAll('input[name="metric"]');
+  const regenerateBtn = document.getElementById('regenerate');
+  const paintToggle = document.getElementById('paintToggle');
+  const colorPick = document.getElementById('colorPick');
+
+  wRange.addEventListener('input', () => { params.w = +wRange.value; updateSlidersUI(); });
+  hRange.addEventListener('input', () => { params.h = +hRange.value; updateSlidersUI(); });
+  pRange.addEventListener('input', () => { params.p = +pRange.value / 100; updateSlidersUI(); });
+  kRange.addEventListener('input', () => { params.k = +kRange.value; updateSlidersUI(); });
+  seedInput.addEventListener('change', () => { params.seed = +seedInput.value; });
+  deadToggle.addEventListener('change', () => { params.noDead = deadToggle.checked; });
+  metricRadios.forEach(r => r.addEventListener('change', () => { params.metric = r.value; }));
+  newSeedBtn.addEventListener('click', () => { params.seed = Math.floor(Math.random() * 1e9); updateSlidersUI(); });
+  regenerateBtn.addEventListener('click', () => buildBoard());
+  colorPick.addEventListener('input', () => {
+    document.documentElement.style.setProperty('--board-bg', colorPick.value);
+  });
+
+  ////////////////////////////////////////////////////////////////////////////
+  // Paint / erase walls
+  ////////////////////////////////////////////////////////////////////////////
+  boardEl.addEventListener('click', e => {
+    if (!paintToggle.checked) return;
+    const cell = e.target.closest('.cell');
+    if (!cell) return;
+    const r = +cell.dataset.row;
+    const c = +cell.dataset.col;
+    const rowArr = board[r].split('');
+    rowArr[c] = rowArr[c] === '#' ? '.' : '#';
+    board[r] = rowArr.join('');
+    buildBoard();
+  });
+
+  ////////////////////////////////////////////////////////////////////////////
+  // Share link – encode parameters + painted board (if tiny)
+  ////////////////////////////////////////////////////////////////////////////
+  share.addEventListener('click', () => {
+    const url = new URL(location.href);
+    url.searchParams.set('w', params.w);
+    url.searchParams.set('h', params.h);
+    url.searchParams.set('p', params.p);
+    url.searchParams.set('k', params.k);
+    url.searchParams.set('seed', params.seed);
+    url.searchParams.set('metric', params.metric);
+    url.searchParams.set('dead', params.noDead ? 1 : 0);
+
+    // If board was painted, include board string when size ≤400 cells.
+    if (board.length * board[0].length <= 400) {
+      url.searchParams.set('b', btoa(board.join('\n')));
+    }
+    navigator.clipboard.writeText(url.toString()).then(() => {
+      share.textContent = 'Copied! ✅';
+      setTimeout(() => share.textContent = 'Share 🔗', 1500);
+    });
+  });
+
+  ////////////////////////////////////////////////////////////////////////////
+  // URL‑based load
+  ////////////////////////////////////////////////////////////////////////////
+  function loadFromURL() {
+    const sp = new URLSearchParams(location.search);
+    if (sp.has('w')) params.w = +sp.get('w');
+    if (sp.has('h')) params.h = +sp.get('h');
+    if (sp.has('p')) params.p = +sp.get('p');
+    if (sp.has('k')) params.k = +sp.get('k');
+    if (sp.has('seed')) params.seed = +sp.get('seed');
+    if (sp.has('metric')) params.metric = sp.get('metric');
+    if (sp.has('dead')) params.noDead = sp.get('dead') === '1';
+    if (sp.has('b')) {
+      const rows = atob(sp.get('b')).split('\n');
+      params.w = rows[0].length; params.h = rows.length;
+      board = rows; ray = rayTable(board);
+    }
+    updateSlidersUI();
+  }
+
+  // Initial setup
+  loadFromURL();
+  buildBoard();
+})();
+</script>
+</body>
+</html>
