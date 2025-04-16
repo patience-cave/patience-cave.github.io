@@ -140,6 +140,10 @@ return null;}
     //  • the board is small (≤5×5), or
     //  • the board is ≥6×6 but minSwipes ≥ 10
     do {
+      if (tries > 0) {
+        params.seed *= 2;
+        params.seed += 1;
+      }
       puzzle = generate(params.w, params.h, params.p, params.seed, params.k);
       if (!puzzle) {
         showError('Invalid board. Adjust parameters or choose a new seed.');
@@ -147,8 +151,6 @@ return null;}
       }
       console.log('FOO', puzzle.minSwipes)
       tries++;
-      params.seed *= 2;
-      params.seed += 1;
     } while (
       params.w > 5 &&
       params.h > 5 &&
