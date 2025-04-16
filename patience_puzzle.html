@@ -126,6 +126,28 @@ h1 {
   box-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 
+.toggle-header {
+  width: 100%;
+  max-width: 640px;
+  background: #111;
+  border-top: 1px solid #333;
+  padding: 8px 16px;
+}
+.toggle-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  cursor: pointer;
+}
+
+/* generator panel hidden when collapsed */
+#generator.collapsed {
+  display: none;
+}
 
 
     /* Generator panel */
@@ -158,7 +180,15 @@ h1 {
       <button class="btn" id="btnRandom">Random</button>
     </div>
   </div>
-  <div id="generator">
+
+  <div id="generator-toggle" class="toggle-header">
+    <button id="btnToggleGenerator" class="btn toggle-btn" aria-expanded="false">
+      <span id="generator-arrow">▶︎</span> Options (coming soon)
+    </button>
+  </div>
+
+
+  <div id="generator" class="collapsed">
     <h2>Generate your own puzzle</h2>
     <label>Width <input type="range" id="width" min="2" max="22" value="10"><span id="wVal">10</span></label>
     <label>Height <input type="range" id="height" min="2" max="22" value="10"><span id="hVal">10</span></label>
@@ -556,6 +586,23 @@ function attemptMove(dir) {
   function loadFromURL(){const url=new URL(window.location.href);if(url.searchParams.has('w')){qs('width').value=url.searchParams.get('w');qs('wVal').textContent=url.searchParams.get('w');}if(url.searchParams.has('h')){qs('height').value=url.searchParams.get('h');qs('hVal').textContent=url.searchParams.get('h');}if(url.searchParams.has('k')){qs('players').value=url.searchParams.get('k');qs('pVal').textContent=url.searchParams.get('k');}if(url.searchParams.has('seed')){qs('seed').value=url.searchParams.get('seed');}if(url.searchParams.has('palette')){const col='#'+url.searchParams.get('palette');qs('palette').value=col;document.documentElement.style.setProperty('--floor',col);} }
   loadFromURL();
   makePuzzle(defaultParams());
+
+  // // toggle the “folder” open/closed
+  // const toggleBtn       = document.getElementById('btnToggleGenerator');
+  // const toggleArrow     = document.getElementById('generator-arrow');
+  // const generatorPanel  = document.getElementById('generator');
+
+  // toggleBtn.addEventListener('click', () => {
+  //   // flip the collapsed class
+  //   generatorPanel.classList.toggle('collapsed');
+
+  //   // update aria + arrow direction
+  //   const isOpen = !generatorPanel.classList.contains('collapsed');
+  //   toggleBtn.setAttribute('aria-expanded', isOpen);
+  //   toggleArrow.textContent = isOpen ? '▼' : '▶︎';
+  // });
+
+
 })();
 </script>
 </body>
