@@ -1,537 +1,431 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Patience Puzzle</title>
-<!-- OpenGraph defaults (will be overwritten by share links generated client‑side) -->
-<meta property="og:title" content="Patience Puzzle" />
-<meta property="og:description" content="Test your patience on this sliding‑ball puzzle." />
-<meta property="og:image" content="https://patiencecave.com/assets/patience_puzzle_default.png" />
-<style>
-  :root {
-    --board-bg: #a8d0fa; /* soft blue (can be replaced by color‑picker) */
-    --ball-color: #ffffff;
-    --wall-color: #000000;
-    --cell-size: min(6vmin, 40px);
-  }
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: #000;
-    color: #ffffff;
-    font-family: system-ui, sans-serif;
-    height: 100%;
-    overflow: hidden; /* no scrolling */
-  }
-  #app {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 0.5rem;
-  }
-  h1 {
-    margin: 0.5rem 0 0 0;
-    font-size: 1.6rem;
-    letter-spacing: 0.05em;
-  }
-  #board-wrapper {
-    flex: 1 1 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-  }
-  #board {
-    display: grid;
-    background: var(--board-bg);
-    padding: 0.25rem;
-    border-radius: 0.5rem;
-    box-sizing: content-box;
-    touch-action: none; /* allow custom swipe gestures */
-  }
-  .cell {
-    width: var(--cell-size);
-    height: var(--cell-size);
-    position: relative;
-    box-sizing: border-box;
-  }
-  .wall {
-    background: var(--wall-color);
-  }
-  .ball {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 80%;
-    height: 80%;
-    transform: translate(-50%, -50%);
-    background: var(--ball-color);
-    border-radius: 50%;
-    transition: transform 0.2s ease-in-out;
-    pointer-events: none;
-  }
-  .goal-orb {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 40%;
-    height: 40%;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    background: var(--wall-color);
-    overflow: visible;
-  }
-  .goal-orb::before {
-    content: "";
-    position: absolute;
-    inset: -20%;
-    border-radius: 50%;
-    border: 2px solid var(--ball-color);
-  }
-  .pulse {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: var(--ball-color);
-    opacity: 0.4;
-    transform: translate(-50%, -50%) scale(0);
-    animation: pulse 1s infinite;
-  }
-  @keyframes pulse {
-    from { transform: translate(-50%, -50%) scale(0); opacity: 0.4; }
-    to   { transform: translate(-50%, -50%) scale(1); opacity: 0; }
-  }
-  /* Controls */
-  #controls {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  .btn {
-    background: #222;
-    color: #fff;
-    border: 1px solid #555;
-    padding: 0.3rem 0.6rem;
-    border-radius: 0.3rem;
-    font-size: 0.9rem;
-    cursor: pointer;
-    user-select: none;
-  }
-  .slider-row {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }
-  #config-panel {
-    background: #111;
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    max-width: 600px;
-  }
-  label { font-size: 0.8rem; white-space: nowrap; }
-  input[type="range"], input[type="number"], input[type="color"] {
-    accent-color: #aaa; /* pastel accent */
-  }
-  #error-msg { color: #f55; margin-top: 0.5rem; }
-</style>
+  <meta charset="utf-8" />
+  <title>Patience Puzzle</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <!-- Open‑Graph defaults (static fallback) -->
+  <meta property="og:title" content="Patience Puzzle" />
+  <meta property="og:description" content="Share and solve sliding‑balls logic puzzles. Can you finish in the minimum moves?" />
+  <meta property="og:image" content="https://patiencecave.com/assets/patience_puzzle_og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <style>
+    :root{
+      --floor:#87b5ff; /* soft blue default */
+      --wall:#000;
+      --ball:#fff;
+    }
+    *{box-sizing:border-box;}
+    html,body{margin:0;height:100%;background:#110;color:#fff;font-family:system-ui,Arial,sans-serif;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;}
+    h1{margin:12px 0 8px;font-size:2rem;letter-spacing:2px;text-transform:uppercase;}
+    #stats{margin-bottom:8px;font-size:0.95rem;}
+    #game-container{position:relative;flex:1;width:100%;max-width:640px;max-height:640px;display:flex;align-items:center;justify-content:center;}
+    canvas{touch-action:none;max-width:100%;max-height:100%;background:#000;display:block;}
+    /* On‑screen controls */
+    #controls{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0;}
+    .btn{background:#222;border:1px solid #555;border-radius:12px;padding:6px 12px;font-size:1rem;color:#fff;cursor:pointer;user-select:none;transition:transform 0.1s;}
+    .btn:active{transform:scale(0.93);}    
+    /* Generator panel */
+    #generator{padding:16px;width:100%;max-width:640px;background:#111;border-top:1px solid #333;overflow:auto;}
+    #generator h2{margin:0 0 12px;font-size:1.1rem;}
+    label{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;font-size:0.9rem;width:100%;gap:6px;}
+    input[type="range"]{flex:1;margin:0 8px;}
+    input[type="number"],input[type="text"]{width:64px;background:#222;color:#fff;border:1px solid #555;border-radius:6px;padding:4px 6px;}
+    #error{color:#ff5c5c;font-size:0.9rem;text-align:center;margin-top:8px;}
+    /* Goal orb (CSS overlay) */
+    .orb{position:absolute;border-radius:50%;pointer-events:none;animation:pulse 1s ease-in-out infinite;}
+    .orb::before{content:"";position:absolute;inset:25%;border-radius:50%;background:#000;}
+    @keyframes pulse{0%{transform:scale(0);opacity:0.7;}100%{transform:scale(1.4);opacity:0;}}
+  </style>
 </head>
 <body>
-<div id="app">
-  <h1>Patience Puzzle <button id="share" class="btn">Share 🔗</button></h1>
-  <div id="stats">Moves: <span id="moves">0</span> / Optimal: <span id="optimal">0</span></div>
-  <div id="board-wrapper"><div id="board"></div></div>
+  <h1>Patience Puzzle</h1>
+  <div id="stats">0 / 0 swipes</div>
+  <div id="game-container"><canvas id="board"></canvas></div>
   <div id="controls">
-    <button class="btn" data-dir="U">⬆︎</button>
-    <button class="btn" data-dir="L">⬅︎</button>
-    <button class="btn" data-dir="D">⬇︎</button>
-    <button class="btn" data-dir="R">➡︎</button>
-    <button class="btn" id="restart">Restart ♻︎</button>
+    <button class="btn" id="btnUp">⬆︎</button>
+    <button class="btn" id="btnLeft">⬅︎</button>
+    <button class="btn" id="btnDown">⬇︎</button>
+    <button class="btn" id="btnRight">➡︎</button>
+    <button class="btn" id="btnRestart">Restart</button>
+    <button class="btn" id="btnShare">Share</button>
   </div>
-  <details id="config-panel">
-    <summary style="cursor:pointer">Generate your own puzzle</summary>
-    <div class="slider-row">
-      <label>Width <input id="wRange" type="range" min="2" max="100" value="10"></label>
-      <label id="wLabel">10</label>
-    </div>
-    <div class="slider-row">
-      <label>Height <input id="hRange" type="range" min="2" max="100" value="10"></label>
-      <label id="hLabel">10</label>
-    </div>
-    <div class="slider-row">
-      <label>Walls % <input id="pRange" type="range" min="0" max="100" value="25"></label>
-      <label id="pLabel">25%</label>
-    </div>
-    <div class="slider-row">
-      <label>Balls <input id="kRange" type="range" min="1" max="5" value="2"></label>
-      <label id="kLabel">2</label>
-    </div>
-    <div class="slider-row">
-      <label>No dead ends <input id="deadToggle" type="checkbox" checked></label>
-    </div>
-    <div class="slider-row">
-      Metric:
-      <label><input type="radio" name="metric" value="diameter" checked> Most Swipes</label>
-      <label><input type="radio" name="metric" value="absorption"> Hard to Solve</label>
-      <label><input type="radio" name="metric" value="optimal"> Hard to Perfect</label>
-    </div>
-    <div class="slider-row">
-      <label>Seed <input id="seedInput" type="number" value="1234"></label>
-      <button id="newSeed" class="btn">New Seed 🎲</button>
-    </div>
-    <div class="slider-row">
-      <label>Paint <input id="paintToggle" type="checkbox"></label>
-      <label>Board color <input type="color" id="colorPick" value="#a8d0fa"></label>
-    </div>
-    <button id="regenerate" class="btn">Regenerate 🔄</button>
-    <div id="error-msg" hidden>Invalid board. Adjust parameters or choose a new seed.</div>
-  </details>
-</div>
+  <div id="generator">
+    <h2>Generate your own puzzle</h2>
+    <label>Width <input type="range" id="width" min="2" max="22" value="10"><span id="wVal">10</span></label>
+    <label>Height <input type="range" id="height" min="2" max="22" value="10"><span id="hVal">10</span></label>
+    <label>Players <input type="range" id="players" min="1" max="10" value="2"><span id="pVal">2</span></label>
+    <label>Seed <input type="text" id="seed" placeholder="auto" spellcheck="false"><button class="btn" id="btnSeed">New Seed</button></label>
+    <label>Palette <input type="color" id="palette" value="#a0c4ff"></label>
+    <button class="btn" id="btnGenerate">Regenerate</button>
+    <div id="error"></div>
+  </div>
+
 <script>
-(() => {
-  ////////////////////////////////////////////////////////////////////////////
-  // Utility helpers
-  ////////////////////////////////////////////////////////////////////////////
-  const DIRS = { U: [-1, 0], D: [1, 0], L: [0, -1], R: [0, 1] };
-  const OPP = { U: 'D', D: 'U', L: 'R', R: 'L' };
+/*************************************************
+ *  Hardest Sliding Balls Puzzle Generator (Browser build)
+ *  Original: ChatGPT 2025‑04‑16
+ *************************************************/
+'use strict';
+const DIRS={U:[-1,0],D:[1,0],L:[0,-1],R:[0,1]},OPPOSITE={U:'D',D:'U',L:'R',R:'L'},DIR_LIST=Object.keys(DIRS);
+function mulberry32(seed){return function(){let t=(seed+=0x6D2B79F5)>>>0;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
+function randomBoard(w,h,p,seed=0xDEADBEEF,keepBorder=true){const rnd=mulberry32(seed>>>0),rows=[];for(let r=0;r<h;++r){let line='';for(let c=0;c<w;++c){if(keepBorder&&(r===0||r===h-1||c===0||c===w-1)){line+='#';}else{line+=rnd()<p?'#':'.';}}rows.push(line);}return rows;}
+function rayTable(board){const h=board.length,w=board[0].length,ray=new Map();for(let r=0;r<h;++r)for(let c=0;c<w;++c){if(board[r][c]==='#')continue;for(const d of DIR_LIST){const [dr,dc]=DIRS[d];let nr=r,nc=c;while(nr+dr>=0&&nr+dr<h&&nc+dc>=0&&nc+dc<w&&board[nr+dr][nc+dc]!=='#'){nr+=dr;nc+=dc;}ray.set(`${r},${c},${d}`,[nr,nc]);}}return ray;}
+const joinVec=v=>`${v[0]},${v[1]}`,cmpVec=(a,b)=>(a[0]-b[0])||(a[1]-b[1]),encState=vecs=>vecs.map(joinVec).join('|'),decState=s=>(s?s.split('|').map(x=>x.split(',').map(Number)):[]);
 
-  function rnd(seed) {
-    let s = seed >>> 0;
-    return () => (s = (s * 1664525 + 1013904223) >>> 0) / 2 ** 32;
+
+function applyMove(state,dir,ray){
+  const [dr,dc]=DIRS[dir],balls=decState(state),order=balls.slice().sort((a,b)=>((b[0]*dr+b[1]*dc)-(a[0]*dr+a[1]*dc))),occ=new Set(balls.map(joinVec)),moved=[];
+  for(const v of order){
+    const [wr,wc]=ray.get(`${v[0]},${v[1]},${dir}`);
+    let nr=wr,nc=wc;
+    while(occ.has(joinVec([nr,nc]))&&(nr!==v[0]||nc!==v[1])){nr-=dr;nc-=dc;}
+    moved.push([nr,nc]);
+    occ.delete(joinVec(v));
+    occ.add(joinVec([nr,nc]));
   }
+  moved.sort(cmpVec);
+  return encState(moved);
+} 
 
-  ////////////////////////////////////////////////////////////////////////////
-  // Board + State generation (logic ported from Python)
-  ////////////////////////////////////////////////////////////////////////////
-  function randomBoard(w, h, p, seed, keepBorder = true) {
-    const rand = rnd(seed);
-    const rows = [];
-    for (let r = 0; r < h; r++) {
-      let row = '';
-      for (let c = 0; c < w; c++) {
-        if (keepBorder && (r === 0 || r === h - 1 || c === 0 || c === w - 1)) row += '#';
-        else row += rand() < p ? '#' : '.';
+function bfsBackward(board,k,target,ray){const dist=new Map([[target,0]]),q=[target];while(q.length){const s=q.shift(),d0=dist.get(s);for(const dir of DIR_LIST){const pred=applyMove(s,OPPOSITE[dir],ray);if(!dist.has(pred)){dist.set(pred,d0+1);q.push(pred);}}}return dist;}
+function diameter(board,k,noDeadEnds=true){const ray=rayTable(board),floors=[];for(let r=0;r<board.length;++r)for(let c=0;c<board[0].length;++c)if(board[r][c]==='.')floors.push([r,c]);const s0=encState(floors.slice(0,k).sort(cmpVec));const d1=bfsForward(s0,ray),s1=[...d1.entries()].reduce((a,b)=>b[1]>a[1]?b:a)[0];const d2=bfsForward(s1,ray),s2=[...d2.entries()].reduce((a,b)=>b[1]>a[1]?b:a);if(noDeadEnds&&s2[1]===0)throw new Error('Graph disconnected');return[s1,s2[0],s2[1]];function bfsForward(start,ray){const dist=new Map([[start,0]]),q=[start];while(q.length){const s=q.shift(),d0=dist.get(s);for(const dir of DIR_LIST){const ns=applyMove(s,dir,ray);if(!dist.has(ns)){dist.set(ns,d0+1);q.push(ns);}}}return dist;}}
+function generate(W,H,P,SEED,K){let attempt=0;while(attempt<100){const board=randomBoard(W,H,P,SEED+attempt);try{const ray=rayTable(board);const floors=[];for(let r=0;r<board.length;++r)for(let c=0;c<board[0].length;++c)if(board[r][c]==='.')floors.push([r,c]);if(floors.length<K)throw new Error('Not enough floor');const start=encState(floors.slice(0,K).sort(cmpVec));const dist=bfsBackward(board,K,start,ray);const goalEntries=[...dist.entries()].sort((a,b)=>b[1]-a[1]);const goal=goalEntries[0][0],minSwipes=dist.get(goal);return{board,start,goal,minSwipes};}catch(_){attempt++;}}
+return null;}
+/*************************************************
+ *  UI + Gameplay                               *
+ *************************************************/
+(function(){
+  const qs=id=>document.getElementById(id);
+  const canvas=qs('board');
+  const ctx=canvas.getContext('2d');
+  const container=qs('game-container');
+  let cellSize=32; // will adjust
+  let game={};
+  /* PARAMS */
+  
+  function defaultParams() {
+    return {
+      w: +qs('width').value || 10,
+      h: +qs('height').value || 10,
+      k: +qs('players').value || 2,
+      seed: qs('seed').value ? parseInt(qs('seed').value, 10) : Math.floor(Math.random() * 1e9),
+      p: 0.25
+    };
+  }
+ // 74871372
+
+  /** Generate or regenerate puzzle */
+  // function makePuzzle(params){
+  //   const puzzle=generate(params.w,params.h,params.p,params.seed,params.k);
+  //   if(!puzzle){
+  //     showError('Invalid board. Adjust parameters or choose a new seed.');
+  //     return false;
+  //   }
+  //   game={...params,...puzzle,balls: decState(puzzle.start) ,swipes:0};
+  //   qs('error').textContent='';
+  //   fitCanvas();
+  //   drawBoard();
+  //   updateStats();
+  //   placeOrbs();
+  //   return true;
+  // }
+
+  function makePuzzle(params){
+    let puzzle = null;
+    let tries = 0;
+
+    // keep re‐generating until either:
+    //  • we’ve tried 100 times (generate will bail anyway), or
+    //  • the board is small (≤5×5), or
+    //  • the board is ≥6×6 but minSwipes ≥ 10
+    do {
+      puzzle = generate(params.w, params.h, params.p, params.seed, params.k);
+      if (!puzzle) {
+        showError('Invalid board. Adjust parameters or choose a new seed.');
+        return false;
       }
-      rows.push(row);
-    }
-    return rows;
+      console.log('FOO', puzzle.minSwipes)
+      tries++;
+      params.seed *= 2;
+      params.seed += 1;
+    } while (
+      params.w > 5 &&
+      params.h > 5 &&
+      (puzzle.minSwipes == undefined || puzzle.minSwipes < 10) &&
+      tries < 100
+    );
+
+    // now commit the final puzzle:
+    game = {
+      ...params,
+      ...puzzle,
+      balls: decState(puzzle.start),
+      swipes: 0
+    };
+    qs('error').textContent = '';
+    fitCanvas();
+    drawBoard();
+    updateStats();
+    placeOrbs();
+    return true;
   }
 
-  function rayTable(board) {
-    const h = board.length, w = board[0].length;
-    const ray = new Map();
-    for (let r = 0; r < h; r++) {
-      for (let c = 0; c < w; c++) {
-        if (board[r][c] === '#') continue;
-        for (const d in DIRS) {
-          const [dr, dc] = DIRS[d];
-          let nr = r, nc = c;
-          while (0 <= nr + dr && nr + dr < h && 0 <= nc + dc && nc + dc < w && board[nr + dr][nc + dc] !== '#') {
-            nr += dr; nc += dc;
-          }
-          ray.set(`${r},${c},${d}`, [nr, nc]);
+
+
+  function showError(msg){qs('error').textContent=msg;ctx.clearRect(0,0,canvas.width,canvas.height);container.querySelectorAll('.orb').forEach(o=>o.remove());}
+  /* Responsive canvas */
+  function fitCanvas() {
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+    console.log(width, height)
+    if (width === 0 || height === 0) return; // 👈 prevent blank canvas
+
+    const size = Math.min(width, height);
+    cellSize = Math.floor(size / Math.max(game.w, game.h));
+    canvas.width = cellSize * game.w;
+    canvas.height = cellSize * game.h;
+  }
+
+  window.addEventListener('resize', () => {
+    setTimeout(() => {
+      if (game.board) {
+        fitCanvas();
+        drawBoard();
+        placeOrbs();
+      }
+    }, 50);
+  });
+
+
+  /* Drawing */
+  
+  function drawBoard() {
+    drawBackground();
+    drawBalls();
+  }
+
+  function drawBackground() {
+    const styles = getComputedStyle(document.documentElement);
+    const wallColor  = styles.getPropertyValue('--wall').trim();
+    const floorColor = styles.getPropertyValue('--floor').trim();
+
+    // walls
+    ctx.fillStyle = wallColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // floor
+    ctx.fillStyle = floorColor;
+    for (let r = 0; r < game.h; r++) {
+      for (let c = 0; c < game.w; c++) {
+        if (game.board[r][c] === '.') {
+          ctx.fillRect(c*cellSize, r*cellSize, cellSize, cellSize);
         }
       }
     }
-    return ray;
   }
 
-  function applyMove(state, d, ray) {
-    const [dr, dc] = DIRS[d];
-    const order = [...state].sort((a, b) => (a[0] * dr + a[1] * dc) - (b[0] * dr + b[1] * dc)).reverse();
-    const occ = new Set(state.map(v => v.toString()));
-    const moved = [];
-    for (const v of order) {
-      const [wr, wc] = ray.get(`${v[0]},${v[1]},${d}`);
-      let nr = wr, nc = wc;
-      while (occ.has(`${nr},${nc}`) && (nr !== v[0] || nc !== v[1])) {
-        nr -= dr; nc -= dc;
-      }
-      moved.push([nr, nc]);
-      occ.delete(v.toString());
-      occ.add(`${nr},${nc}`);
-    }
-    return moved.sort();
-  }
+  function drawBalls() {
+    if (!game.balls || !Array.isArray(game.balls)) return;
 
-  ////////////////////////////////////////////////////////////////////////////
-  // Simple BFS diameter (single ball only – practical for browser).
-  ////////////////////////////////////////////////////////////////////////////
-  function bfs(start, ray) {
-    const queue = [start];
-    const dist = new Map([[start.toString(), 0]]);
-    while (queue.length) {
-      const s = queue.shift();
-      const d0 = dist.get(s.toString());
-      for (const dir in DIRS) {
-        const ns = applyMove([s], dir, ray)[0];
-        const key = ns.toString();
-        if (!dist.has(key)) {
-          dist.set(key, d0 + 1);
-          queue.push(ns);
-        }
-      }
-    }
-    return dist;
-  }
+    const ballColor = getComputedStyle(document.documentElement)
+      .getPropertyValue('--ball')
+      .trim();
 
-  function diameter(board) {
-    // For performance, restrict to single‑ball diameter only.
-    const floors = [];
-    board.forEach((row, r) => row.split('').forEach((ch, c) => { if (ch === '.') floors.push([r, c]); }));
-    const start = floors[0];
-    const ray = rayTable(board);
-    const d1 = bfs(start, ray);
-    const far1 = [...d1.entries()].reduce((a, b) => b[1] > a[1] ? b : a)[0].split(',').map(Number);
-    const d2 = bfs(far1, ray);
-    const far2 = [...d2.entries()].reduce((a, b) => b[1] > a[1] ? b : a)[0].split(',').map(Number);
-    return { start: far1, goal: far2, dist: d2.get(far2.toString()) };
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  // Rendering & Game State
-  ////////////////////////////////////////////////////////////////////////////
-  const boardEl = document.getElementById('board');
-  const movesEl = document.getElementById('moves');
-  const optEl = document.getElementById('optimal');
-  const errorEl = document.getElementById('error-msg');
-
-  let board = [];
-  let ray = null;
-  let balls = [];
-  let goal = [];
-  let moves = 0;
-
-  const params = {
-    w: 10, h: 10, p: 0.25, k: 2, seed: 1234,
-    metric: 'diameter', noDead: true
-  };
-
-  function updateSlidersUI() {
-    wLabel.textContent = params.w;
-    hLabel.textContent = params.h;
-    pLabel.textContent = Math.round(params.p * 100) + '%';
-    kLabel.textContent = params.k;
-    seedInput.value = params.seed;
-  }
-
-  function buildBoard() {
-    try {
-      board = randomBoard(params.w, params.h, params.p, params.seed);
-      ray = rayTable(board);
-      // quick check floor count
-      const floorCount = board.join('').split('.').length - 1;
-      if (floorCount < params.k) throw new Error('Not enough floor tiles.');
-
-      // For simplicity compute diameter with 1 ball and place other balls at same start (random offset) – ok for demo.
-      const dia = diameter(board);
-      balls = [dia.start];
-      while (balls.length < params.k) {
-        // pick random floor not occupied yet
-        const randPos = randomFloor();
-        if (!balls.some(b => b[0] === randPos[0] && b[1] === randPos[1])) balls.push(randPos);
-      }
-      goal = [dia.goal];
-      optEl.textContent = dia.dist || 0;
-      moves = 0;
-      movesEl.textContent = moves;
-      renderBoard();
-      errorEl.hidden = true;
-    } catch (e) {
-      boardEl.innerHTML = '';
-      errorEl.hidden = false;
-      console.error(e);
+    ctx.fillStyle = ballColor;
+    for (const [r, c] of game.balls) {
+      ctx.beginPath();
+      ctx.arc(
+        c * cellSize + cellSize / 2,
+        r * cellSize + cellSize / 2,
+        cellSize * 0.35,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
     }
   }
 
-  function randomFloor() {
-    const floors = [];
-    board.forEach((row, r) => row.split('').forEach((ch, c) => { if (ch === '.') floors.push([r, c]); }));
-    return floors[Math.floor(Math.random() * floors.length)];
-  }
+  
+  function placeOrbs() {
+    // remove old orbs
+    container.querySelectorAll('.orb').forEach(o => o.remove());
 
-  function renderBoard() {
-    boardEl.style.setProperty('grid-template-columns', `repeat(${params.w}, var(--cell-size))`);
-    boardEl.style.setProperty('grid-template-rows', `repeat(${params.h}, var(--cell-size))`);
-    boardEl.innerHTML = '';
+    const goal = decState(game.goal);
+    if (!goal) return;
 
-    for (let r = 0; r < params.h; r++) {
-      for (let c = 0; c < params.w; c++) {
-        const cell = document.createElement('div');
-        cell.className = 'cell';
-        if (board[r][c] === '#') cell.classList.add('wall');
-        cell.dataset.row = r; cell.dataset.col = c;
-        boardEl.appendChild(cell);
-      }
-    }
-    for (const g of goal) placeGoalOrb(g);
-    for (const b of balls) placeBall(b);
-  }
+    // figure out where the canvas sits inside the container
+    const canvasRect    = canvas.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+    const offsetX = canvasRect.left - containerRect.left;
+    const offsetY = canvasRect.top  - containerRect.top;
 
-  function placeBall(pos) {
-    const idx = pos[0] * params.w + pos[1];
-    const cell = boardEl.children[idx];
-    let ball = cell.querySelector('.ball');
-    if (!ball) {
-      ball = document.createElement('div');
-      ball.className = 'ball';
-      cell.appendChild(ball);
+    for (const [r,c] of goal) {
+      const div = document.createElement('div');
+      div.className = 'orb';
+      div.style.width  = div.style.height = cellSize + 'px';
+      // now include the canvas’s offset
+      div.style.left = offsetX + c*cellSize + 'px';
+      div.style.top  = offsetY + r*cellSize + 'px';
+      container.appendChild(div);
     }
   }
 
-  function placeGoalOrb(pos) {
-    const idx = pos[0] * params.w + pos[1];
-    const cell = boardEl.children[idx];
-    const orb = document.createElement('div');
-    orb.className = 'goal-orb';
-    const pulse = document.createElement('div');
-    pulse.className = 'pulse';
-    orb.appendChild(pulse);
-    cell.appendChild(orb);
+
+
+
+  /* Movement */
+  let animating=false;
+  
+
+
+function applyMovePositions(balls, dir, ray) {
+  const [dr, dc] = DIRS[dir];
+  // build an index array [0,1,2,...]
+  const idx = balls.map((_, i) => i);
+  // sort indices by “how far along the ray they sit” so that we push from front‑to‑back
+  idx.sort((i, j) => {
+    const a = balls[i][0] * dr + balls[i][1] * dc;
+    const b = balls[j][0] * dr + balls[j][1] * dc;
+    return b - a;
+  });
+
+  // occupancy set, stored as strings "r,c"
+  const occ = new Set(balls.map(([r,c]) => `${r},${c}`));
+  // allocate new array
+  const moved = Array(balls.length);
+
+  for (let k = 0; k < idx.length; k++) {
+    const i = idx[k];
+    const [r, c] = balls[i];
+    // look up the furthest reachable floor cell for this ball
+    let [wr, wc] = ray.get(`${r},${c},${dir}`);
+    let nr = wr, nc = wc;
+    // if it’s occupied, step backwards until free
+    while ( occ.has(`${nr},${nc}`) && (nr!==r || nc!==c) ) {
+      nr -= dr;
+      nc -= dc;
+    }
+    // record the result in the *same* slot i
+    moved[i] = [nr, nc];
+    // update occupancy
+    occ.delete(`${r},${c}`);
+    occ.add(`${nr},${nc}`);
   }
 
-  ////////////////////////////////////////////////////////////////////////////
-  // Movement
-  ////////////////////////////////////////////////////////////////////////////
-  function doMove(dir) {
-    if (!board.length) return;
-    const newBalls = applyMove(balls, dir, ray);
-    // Check changes
-    if (JSON.stringify(newBalls) === JSON.stringify(balls)) return; // no move
-    balls = newBalls;
-    moves++;
-    movesEl.textContent = moves;
+  return moved;
+}
 
-    // animate:
-    const cells = [...boardEl.children];
-    cells.forEach(c => c.querySelector('.ball')?.remove());
-    for (const b of balls) placeBall(b);
+
+
+  
+// then, in your attemptMove, swap out the state‑based applyMove:
+function attemptMove(dir) {
+  if (animating) return;
+  const ray = rayTable(game.board);
+  const newBalls = applyMovePositions(game.balls, dir, ray);
+  // if nothing changed, do nothing
+  let moved = false;
+  for (let i=0; i<newBalls.length; i++) {
+    if (newBalls[i][0] !== game.balls[i][0] ||
+        newBalls[i][1] !== game.balls[i][1]) {
+      moved = true;
+      break;
+    }
   }
+  if (!moved) return;
 
+  animateMove(newBalls, () => {
+    game.balls = newBalls;
+    game.swipes++;
+    updateStats();
+    checkWin();
+  });
+}
+
+
+  function animateMove(targets,cb){
+    animating=true;
+    const start=performance.now(),duration=200,from=game.balls.map(v=>v.slice());
+    function frame(now){
+      let t=Math.min(1,(now-start)/duration);
+      t=t<0.5?2*t*t: -1+(4-2*t)*t;
+      drawBackground();
+      
+      // now draw *only* the interpolated balls
+     const ballColor = getComputedStyle(document.documentElement)
+                         .getPropertyValue('--ball').trim();
+     ctx.fillStyle = ballColor;
+     for (let i = 0; i < from.length; i++) {
+       const [sr, sc] = from[i], [tr, tc] = targets[i];
+       const cr = sr + (tr - sr)*t,
+             cc = sc + (tc - sc)*t;
+       ctx.beginPath();
+       ctx.arc(cc*cellSize + cellSize/2,
+               cr*cellSize + cellSize/2,
+               cellSize*0.35, 0, Math.PI*2);
+       ctx.fill();
+     }
+
+     if (t < 1) {
+       requestAnimationFrame(frame);
+     } else {
+       animating = false;
+       cb && cb();
+       drawBoard();    // final commit: walls + floor + balls
+     }
+   }
+
+   requestAnimationFrame(frame);
+ }
+
+  function checkWin(){const goalStr=game.goal;const cur=encState(game.balls);if(cur===goalStr){setTimeout(()=>alert(`Solved in ${game.swipes} moves! Minimum is ${game.minSwipes}.`),50);}}
+  /* Stats */
+  function updateStats(){qs('stats').textContent=`${game.swipes} / ${game.minSwipes} swipes`;}
+  
+  /* Inputs */
   document.addEventListener('keydown', e => {
-    const keyMap = { ArrowUp: 'U', ArrowDown: 'D', ArrowLeft: 'L', ArrowRight: 'R', w: 'U', s: 'D', a: 'L', d: 'R' };
-    if (keyMap[e.key]) { e.preventDefault(); doMove(keyMap[e.key]); }
-  });
-
-  document.querySelectorAll('#controls [data-dir]').forEach(btn => {
-    btn.addEventListener('click', () => doMove(btn.dataset.dir));
-  });
-  restart.addEventListener('click', buildBoard);
-
-  // Touch swipes
-  let touchStart = null;
-  boardEl.addEventListener('touchstart', e => touchStart = e.touches[0]);
-  boardEl.addEventListener('touchend', e => {
-    if (!touchStart) return;
-    const end = e.changedTouches[0];
-    const dx = end.clientX - touchStart.clientX;
-    const dy = end.clientY - touchStart.clientY;
-    if (Math.abs(dx) + Math.abs(dy) < 20) return;
-    const dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'R' : 'L') : (dy > 0 ? 'D' : 'U');
-    doMove(dir);
-    touchStart = null;
-  });
-
-  ////////////////////////////////////////////////////////////////////////////
-  // Config panel
-  ////////////////////////////////////////////////////////////////////////////
-  const wRange = document.getElementById('wRange');
-  const hRange = document.getElementById('hRange');
-  const pRange = document.getElementById('pRange');
-  const kRange = document.getElementById('kRange');
-  const wLabel = document.getElementById('wLabel');
-  const hLabel = document.getElementById('hLabel');
-  const pLabel = document.getElementById('pLabel');
-  const kLabel = document.getElementById('kLabel');
-  const seedInput = document.getElementById('seedInput');
-  const newSeedBtn = document.getElementById('newSeed');
-  const deadToggle = document.getElementById('deadToggle');
-  const metricRadios = document.querySelectorAll('input[name="metric"]');
-  const regenerateBtn = document.getElementById('regenerate');
-  const paintToggle = document.getElementById('paintToggle');
-  const colorPick = document.getElementById('colorPick');
-
-  wRange.addEventListener('input', () => { params.w = +wRange.value; updateSlidersUI(); });
-  hRange.addEventListener('input', () => { params.h = +hRange.value; updateSlidersUI(); });
-  pRange.addEventListener('input', () => { params.p = +pRange.value / 100; updateSlidersUI(); });
-  kRange.addEventListener('input', () => { params.k = +kRange.value; updateSlidersUI(); });
-  seedInput.addEventListener('change', () => { params.seed = +seedInput.value; });
-  deadToggle.addEventListener('change', () => { params.noDead = deadToggle.checked; });
-  metricRadios.forEach(r => r.addEventListener('change', () => { params.metric = r.value; }));
-  newSeedBtn.addEventListener('click', () => { params.seed = Math.floor(Math.random() * 1e9); updateSlidersUI(); });
-  regenerateBtn.addEventListener('click', () => buildBoard());
-  colorPick.addEventListener('input', () => {
-    document.documentElement.style.setProperty('--board-bg', colorPick.value);
-  });
-
-  ////////////////////////////////////////////////////////////////////////////
-  // Paint / erase walls
-  ////////////////////////////////////////////////////////////////////////////
-  boardEl.addEventListener('click', e => {
-    if (!paintToggle.checked) return;
-    const cell = e.target.closest('.cell');
-    if (!cell) return;
-    const r = +cell.dataset.row;
-    const c = +cell.dataset.col;
-    const rowArr = board[r].split('');
-    rowArr[c] = rowArr[c] === '#' ? '.' : '#';
-    board[r] = rowArr.join('');
-    buildBoard();
-  });
-
-  ////////////////////////////////////////////////////////////////////////////
-  // Share link – encode parameters + painted board (if tiny)
-  ////////////////////////////////////////////////////////////////////////////
-  share.addEventListener('click', () => {
-    const url = new URL(location.href);
-    url.searchParams.set('w', params.w);
-    url.searchParams.set('h', params.h);
-    url.searchParams.set('p', params.p);
-    url.searchParams.set('k', params.k);
-    url.searchParams.set('seed', params.seed);
-    url.searchParams.set('metric', params.metric);
-    url.searchParams.set('dead', params.noDead ? 1 : 0);
-
-    // If board was painted, include board string when size ≤400 cells.
-    if (board.length * board[0].length <= 400) {
-      url.searchParams.set('b', btoa(board.join('\n')));
+    switch (e.key) {
+      case 'ArrowUp':    case 'w':  case 'W':
+        e.preventDefault();
+        attemptMove('U');
+        break;
+      case 'ArrowDown':  case 's':  case 'S':
+        e.preventDefault();
+        attemptMove('D');
+        break;
+      case 'ArrowLeft':  case 'a':  case 'A':
+        e.preventDefault();
+        attemptMove('L');
+        break;
+      case 'ArrowRight': case 'd':  case 'D':
+        e.preventDefault();
+        attemptMove('R');
+        break;
     }
-    navigator.clipboard.writeText(url.toString()).then(() => {
-      share.textContent = 'Copied! ✅';
-      setTimeout(() => share.textContent = 'Share 🔗', 1500);
-    });
   });
 
-  ////////////////////////////////////////////////////////////////////////////
-  // URL‑based load
-  ////////////////////////////////////////////////////////////////////////////
-  function loadFromURL() {
-    const sp = new URLSearchParams(location.search);
-    if (sp.has('w')) params.w = +sp.get('w');
-    if (sp.has('h')) params.h = +sp.get('h');
-    if (sp.has('p')) params.p = +sp.get('p');
-    if (sp.has('k')) params.k = +sp.get('k');
-    if (sp.has('seed')) params.seed = +sp.get('seed');
-    if (sp.has('metric')) params.metric = sp.get('metric');
-    if (sp.has('dead')) params.noDead = sp.get('dead') === '1';
-    if (sp.has('b')) {
-      const rows = atob(sp.get('b')).split('\n');
-      params.w = rows[0].length; params.h = rows.length;
-      board = rows; ray = rayTable(board);
-    }
-    updateSlidersUI();
-  }
 
-  // Initial setup
+  qs('btnUp').onclick=()=>attemptMove('U');qs('btnDown').onclick=()=>attemptMove('D');qs('btnLeft').onclick=()=>attemptMove('L');qs('btnRight').onclick=()=>attemptMove('R');
+  /* Touch swipe */
+  let touchStartX=0,touchStartY=0;
+  canvas.addEventListener('touchstart',e=>{if(e.touches.length===1){touchStartX=e.touches[0].clientX;touchStartY=e.touches[0].clientY;}},{passive:true});
+  canvas.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-touchStartX,dy=e.changedTouches[0].clientY-touchStartY;if(Math.abs(dx)>Math.abs(dy)){if(dx>30)attemptMove('R');else if(dx<-30)attemptMove('L');}else{if(dy>30)attemptMove('D');else if(dy<-30)attemptMove('U');}},{passive:true});
+  /* Restart */
+  qs('btnRestart').onclick=()=>{game.balls=decState(game.start);game.swipes=0;drawBoard();updateStats();};
+  /* Generator UI sync */
+  ['width','height','players'].forEach(id=>qs(id).addEventListener('input',e=>{qs(id==='width'?'wVal':id==='height'?'hVal':'pVal').textContent=e.target.value;}));
+  qs('btnSeed').onclick=()=>{qs('seed').value=Math.floor(Math.random()*1e9);};
+  /* Palette */
+  qs('palette').addEventListener('input',e=>{document.documentElement.style.setProperty('--floor',e.target.value);drawBoard();});
+  /* Regenerate */
+  qs('btnGenerate').onclick=()=>{const params=defaultParams();makePuzzle(params);updateStats();};
+  /* Share */
+  qs('btnShare').onclick=()=>{const url=new URL(window.location.href);url.searchParams.set('w',game.w);url.searchParams.set('h',game.h);url.searchParams.set('k',game.k);url.searchParams.set('seed',game.seed);url.searchParams.set('palette',qs('palette').value.substring(1));navigator.clipboard.writeText(url.toString()).then(()=>alert('Link copied! Share away.'));};
+  /* URL Parameters */
+  function loadFromURL(){const url=new URL(window.location.href);if(url.searchParams.has('w')){qs('width').value=url.searchParams.get('w');qs('wVal').textContent=url.searchParams.get('w');}if(url.searchParams.has('h')){qs('height').value=url.searchParams.get('h');qs('hVal').textContent=url.searchParams.get('h');}if(url.searchParams.has('k')){qs('players').value=url.searchParams.get('k');qs('pVal').textContent=url.searchParams.get('k');}if(url.searchParams.has('seed')){qs('seed').value=url.searchParams.get('seed');}if(url.searchParams.has('palette')){const col='#'+url.searchParams.get('palette');qs('palette').value=col;document.documentElement.style.setProperty('--floor',col);} }
   loadFromURL();
-  buildBoard();
+  makePuzzle(defaultParams());
 })();
 </script>
 </body>
