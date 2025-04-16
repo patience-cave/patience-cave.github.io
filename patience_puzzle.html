@@ -74,13 +74,6 @@ function rayTable(board){const h=board.length,w=board[0].length,ray=new Map();fo
 const joinVec=v=>`${v[0]},${v[1]}`,cmpVec=(a,b)=>(a[0]-b[0])||(a[1]-b[1]),encState=vecs=>vecs.map(joinVec).join('|'),decState=s=>(s?s.split('|').map(x=>x.split(',').map(Number)):[]);
 
 
-const updateOgDescription = () => {
-    const desc = `Share and solve sliding-balls logic puzzle. Can you finish this ${game.w}X${game.h} puzzle in ${game.minSwipes} moves?`;
-    const meta = document.querySelector('meta[property="og:description"]');
-    if (meta) meta.setAttribute('content', desc);
-  };
-
-
 function applyMove(state,dir,ray){
   const [dr,dc]=DIRS[dir],balls=decState(state),order=balls.slice().sort((a,b)=>((b[0]*dr+b[1]*dc)-(a[0]*dr+a[1]*dc))),occ=new Set(balls.map(joinVec)),moved=[];
   for(const v of order){
@@ -102,6 +95,13 @@ return null;}
 /*************************************************
  *  UI + Gameplay                               *
  *************************************************/
+
+    function updateOgDescription() {
+      const desc = `Share and solve sliding-balls logic puzzle. Can you finish this ${game.w}X${game.h} puzzle in ${game.minSwipes} moves?`;
+      const meta = document.querySelector('meta[property="og:description"]');
+      if (meta) meta.setAttribute('content', desc);
+    }
+
 (function(){
   const qs=id=>document.getElementById(id);
   const canvas=qs('board');
@@ -110,7 +110,8 @@ return null;}
   let cellSize=32; // will adjust
   let game={};
   /* PARAMS */
-  
+
+
   function defaultParams() {
     return {
       w: +qs('width').value || 10,
@@ -170,26 +171,16 @@ return null;}
       balls: decState(puzzle.start),
       swipes: 0
     };
+    updateOgDescription()
 
     qs('seed').value = game.seed;
 
     qs('error').textContent = '';
 
-
-    // update OG description now that we know w, h, minSwipes:
-    const meta = document.querySelector('meta[property="og:description"]');
-    if (meta) {
-      meta.setAttribute(
-        'content',
-        `Share and solve sliding-balls logic puzzle. Can you finish this ${game.w}X${game.h} puzzle in ${game.minSwipes} moves?`
-      );
-    }
-
     fitCanvas();
     drawBoard();
     updateStats();
     placeOrbs();
-    updateOgDescription();
     return true;
   }
 
