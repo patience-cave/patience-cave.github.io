@@ -22,12 +22,66 @@
     html,body{margin:0;height:100%;background:#000;color:#fff;font-family:system-ui,Arial,sans-serif;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;}
     h1{margin:12px 0 8px;font-size:2rem;letter-spacing:2px;text-transform:uppercase;}
     #stats{margin-bottom:8px;font-size:0.95rem;}
-    #game-container{position:relative;flex:1;width:100%;max-width:640px;max-height:640px;display:flex;align-items:center;justify-content:center;}
+    
+
+
+
+#game-container {
+    flex: 3;            /* was 1 */
+    width: 100%;
+    max-width: none;    /* lift the 640px cap */
+    max-height: none;   /* lift the 640px cap */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+
+
     canvas{touch-action:none;max-width:100%;max-height:100%;background:#000;display:block;}
     /* On‑screen controls */
-    #controls{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0;}
-    .btn{background:#222;border:1px solid #555;border-radius:12px;padding:6px 12px;font-size:1rem;color:#fff;cursor:pointer;user-select:none;transition:transform 0.1s;}
-    .btn:active{transform:scale(0.93);}    
+    
+
+#controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+/* D‑pad grid */
+#dpad {
+  display: grid;
+  grid-template-areas:
+    ". up    ."
+    "left . right"
+    ". down  .";
+  grid-template-columns: 40px 40px 40px;
+  grid-template-rows: 40px 40px 40px;
+  gap: 8px;
+}
+
+/* place each arrow */
+#btnUp    { grid-area: up;    }
+#btnDown  { grid-area: down;  }
+#btnLeft  { grid-area: left;  }
+#btnRight { grid-area: right; }
+
+/* make arrows larger & centered */
+  .btn.arrow {
+    width: 48px;    /* was 60px */
+    height: 48px;   /* was 60px */
+    font-size: 1.2rem; /* was 1.5rem */
+  }
+
+/* Restart/Share row */
+#other-controls {
+  display: flex;
+  gap: 8px;
+}
+
+
     /* Generator panel */
     #generator{padding:16px;width:100%;max-width:640px;background:#111;border-top:1px solid #333;overflow:auto;}
     #generator h2{margin:0 0 12px;font-size:1.1rem;}
@@ -45,13 +99,17 @@
   <h1>Patience Puzzle</h1>
   <div id="stats">0 / 0 swipes</div>
   <div id="game-container"><canvas id="board"></canvas></div>
-  <div id="controls">
-    <button class="btn" id="btnUp">⬆︎</button>
-    <button class="btn" id="btnLeft">⬅︎</button>
-    <button class="btn" id="btnDown">⬇︎</button>
-    <button class="btn" id="btnRight">➡︎</button>
-    <button class="btn" id="btnRestart">Restart</button>
-    <button class="btn" id="btnShare">Share</button>
+    <div id="controls">
+    <div id="dpad">
+      <button class="btn arrow" id="btnUp">⬆︎</button>
+      <button class="btn arrow" id="btnLeft">⬅︎</button>
+      <button class="btn arrow" id="btnDown">⬇︎</button>
+      <button class="btn arrow" id="btnRight">➡︎</button>
+    </div>
+    <div id="other-controls">
+      <button class="btn" id="btnRestart">Restart</button>
+      <button class="btn" id="btnShare">Share</button>
+    </div>
   </div>
   <div id="generator">
     <h2>Generate your own puzzle</h2>
