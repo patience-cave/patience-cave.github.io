@@ -3,7 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <title>Patience Puzzle</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta 
+    name="viewport"
+    content="width=device-width,
+           initial-scale=1.0,
+           minimum-scale=1.0,
+           maximum-scale=1.0,
+           user-scalable=no
+    />
   <!-- Open‑Graph defaults (static fallback) -->
   <meta property="og:title" content="Patience Puzzle" />
   <meta property="og:description" content="Test your patience with these sliding logic puzzles. Can you finish in the minimum moves?" />
@@ -31,6 +38,12 @@
      html, body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
+
+    html, body, canvas, #controls {
+  /* prevents double‑tap zoom & pinch‑to‑zoom */
+  touch-action: manipulation;
+  -ms-touch-action: manipulation;  /* for older Edge */
+}
 
 h1 {
   font-weight: 700;
@@ -73,7 +86,7 @@ h1 {
   grid-template-columns: 40px 40px 40px;
   grid-template-rows: 40px 40px 40px;
   gap: 8px;
-  margin-bottom: 24px;
+  margin-bottom: 124px;
 }
 
 /* place each arrow */
