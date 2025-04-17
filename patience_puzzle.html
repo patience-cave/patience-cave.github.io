@@ -527,7 +527,24 @@ function attemptMove(dir) {
    requestAnimationFrame(frame);
  }
 
-  function checkWin(){const goalStr=game.goal;const cur=encState(game.balls);if(cur===goalStr){setTimeout(()=>alert(`Solved in ${game.swipes} moves! Minimum is ${game.minSwipes}.`),50);}}
+
+  
+function checkWin() {
+  const goalStr = game.goal;
+  // sort the current balls lexicographically so we ignore “which ball is which”
+  const sortedBalls = game.balls
+    .slice()
+    .sort((a, b) => (a[0] - b[0]) || (a[1] - b[1]));
+  const cur = encState(sortedBalls);
+  if (cur === goalStr) {
+    setTimeout(
+      () => alert(`Solved in ${game.swipes} moves! Minimum is ${game.minSwipes}.`),
+      50
+    );
+  }
+}
+
+ // function checkWin(){const goalStr=game.goal;const cur=encState(game.balls);if(cur===goalStr){setTimeout(()=>alert(`Solved in ${game.swipes} moves! Minimum is ${game.minSwipes}.`),50);}}
   /* Stats */
   function updateStats(){qs('stats').textContent=`${game.swipes} / ${game.minSwipes} swipes`;}
   
