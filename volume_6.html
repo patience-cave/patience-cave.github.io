@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Super Patience Chair Volume 6</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: black; /* darkgray; */ /* default if bg image not available */
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-attachment: fixed;
+      background-position: center;
+      height: 100vh;
+    }
+    #container {
+      position: relative;
+      z-index: 1;
+      padding-top: 20px;
+    }
+    .page-img {
+      display: block;
+      width: 90%;
+      max-width: 500px;  /* limit maximum width to 500px */
+      border: 4px solid black; /* adjust thickness if needed */
+      margin: 20px auto 5px auto;
+    }
+    .page-label {
+      display: block;
+      text-align: center;
+      background-color: white;
+      color: black;
+      font-family: 'Open Sans', sans-serif;
+      padding: 5px 10px;
+      border-radius: 20px;
+      width: fit-content;
+      margin: 0 auto 20px auto;
+    }
+  </style>
+</head>
+<body>
+  <div id="container"></div>
+
+  <script>
+    // Determine the volume number from the filename (expects "volume-X.html")
+    const filename = window.location.pathname.split('/').pop();
+    const volumeMatch = filename.match(/volume[-_](\d+)\.html/i);
+    if (!volumeMatch) {
+      console.error('Filename does not match the expected format "volume-X.html".');
+    }
+    const volume = volumeMatch ? volumeMatch[1] : '6';
+
+    // List of possible image extensions.
+    const extensions = ['.PNG', '.png', '.JPG', '.jpg', '.JPEG', '.jpeg', '.webp', '.WEBP'];
+
+    // Function to try to load an image with different extensions.
+    function loadImageWithExtensions(basePath, onSuccess, onError) {
+      let index = 0;
+      function tryNext() {
+        if (index >= extensions.length) {
+          if (onError) onError();
+          return;
+        }
+        const currentPath = basePath + extensions[index];
+        const img = new Image();
+        img.onload = function() {
+          onSuccess(currentPath);
+        };
+        img.onerror = function() {
+          index++;
+          tryNext();
+        };
+        img.src = currentPath;
+      }
+      tryNext();
+    }
+
+    // Set the background image using the folder with an underscore.
+    const bgBasePath = `/images/volume_${volume}/bg`;
+    loadImageWithExtensions(bgBasePath, function(bgImagePath) {
+      // Create a new div element to serve as the background container
+      const bgDiv = document.createElement('div');
+
+      // Apply CSS styles to fix it in place and cover the viewport
+      bgDiv.style.position = 'fixed';
+      bgDiv.style.top = 0;
+      bgDiv.style.left = 0;
+      bgDiv.style.width = '100vw';
+      bgDiv.style.height = '100vh';
+      bgDiv.style.backgroundImage = `url('${bgImagePath}')`;
+      bgDiv.style.backgroundSize = 'cover';
+      bgDiv.style.backgroundPosition = 'center';
+      bgDiv.style.backgroundRepeat = 'no-repeat';
+      bgDiv.style.zIndex = '-1';
+
+      // Set initial opacity to 0 (invisible) and add a transition effect
+      bgDiv.style.opacity = '0';
+      bgDiv.style.transition = 'opacity 1.5s ease-in-out';
+
+      // Add the background div to the beginning of the body
+      document.body.prepend(bgDiv);
+
+      // After the window fully loads, change the opacity to 1 to fade in
+      window.addEventListener('load', () => {
+        bgDiv.style.opacity = '1';
+      });
+
+    }, function() {
+      console.error('Background image not found.');
+    });
+
+    // Function to sequentially add page images.
+    window.addEventListener('DOMContentLoaded', function() {
+      const container = document.getElementById('container');
+      let page = 0;
+
+      function addNextImage() {
+        let basePath;
+        if (page === 0) {
+          basePath = `/images/volume_${volume}/cover`;
+        } else {
+          basePath = `/images/volume_${volume}/${page}`;
+        }
+        loadImageWithExtensions(basePath, function(foundPath) {
+          const img = new Image();
+          img.src = foundPath;
+          img.className = 'page-img';
+          img.onload = function() {
+            container.appendChild(img);
+
+            // Create and append a label underneath the image.
+            //const label = document.createElement('div');
+            //label.className = 'page-label';
+            //label.textContent = `Page ${page}`;
+            //container.appendChild(label);
+
+            page++;
+            addNextImage(); // recursively add next image
+          };
+        }, function() {
+          console.log(`No more images after Page ${page - 1}`);
+        });
+      }
+
+      addNextImage();
+    });
+  </script>
+</body>
+</html>
