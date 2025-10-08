@@ -1,0 +1,67 @@
+{
+    "max_levels": 8,
+    "level": 1,
+    "background": "black",
+    "levels": [
+        {
+            "resolution": [6, 6],
+            "origin": [14, 14],
+            "board_size": [6, 6],
+            "background": "gray",
+            "max_moves": 27,
+            "objects": {
+                "floor": {},
+                "snake": {
+                    "positions": [[0,0]]
+                },
+                "fruits": {
+                    "positions": [[4,1], [2,3], [1,0], [4,3]]
+                }
+            }
+        },
+        {
+            "resolution": [5, 5],
+            "origin": [12, 12],
+            "board_size": [8, 8],
+            "background": "gray",
+            "max_moves": 35,
+            "objects": {
+                "floor": {},
+                "snake": {
+                    "positions": [[3,3]]
+                },
+                "fruits": {
+                    "positions": [[7,3], [0,3], [7,1], [7,5]]
+                },
+                "portals": {
+                    "pairs": [
+                        [[1,1], [1,6]]
+                    ]
+                }
+            }
+        },
+        {
+            "resolution": [5, 5],
+            "origin": [12, 12],
+            "board_size": [8, 8],
+            "background": "gray",
+            "max_moves": 49,
+            "objects": {
+                "floor": {},
+                "snake": {
+                    "positions": [[0,4]]
+                },
+                "fruits": {
+                    "positions": [[4,7], [4,4], [4,0], [3,3], [0,3], [4,3], [3,4]]
+                },
+                "portals": {
+                    "pairs": [
+                        [[1,1], [6,6]],
+                        [[1,6], [6,1]]
+                    ]
+                }
+            }
+        }
+    ]
+}   
+

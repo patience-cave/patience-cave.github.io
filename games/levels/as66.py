@@ -1,14 +1,16 @@
-from helper import chunk_list_avg_size, iterate_over_2D, lists_match
+from helper import iterate_over_2D, lists_match
+from useful_objects import moves_left, levels_left
+from game_template import game_template
 
 class color_pads:
-    def __init__(self, game, color_pads=[]):
+    def __init__(self, game, input={}):
         self.id = "color_pads"
         self.colors = {
             "pad-yellow": "yellow",
             "pad-cyan": "cyan",
             "pad-soft blue": "soft blue",
         }
-        self.color_pads = color_pads
+        self.color_pads = input.get("color_pads") or []
     
     def render(self, game):
         for pad in self.color_pads:
@@ -16,94 +18,14 @@ class color_pads:
                 color = pad["color"]
                 game.set(position, f"pad-{color}")
 
-
-class levels_left:
-    def __init__(self, game):
-        self.id = "levels_left"
-        self.colors = {
-            "unused level": "black",
-            "used level": "white"
-        }
-        game.protected_colors += ["used level", "unused level"]
-        self.on_level = 0
-    
-    def render(self, game):
-
-        positions_list = []
-        for i in range(game.actual_size[0]):
-            positions_list.append([i, 0])
-        
-        chunk_size = len(positions_list) / game.max_levels
-        self.positions = chunk_list_avg_size(positions_list, chunk_size)
-
-        self.update_level(game)
-
-    def update_level(self, game):
-
-        for i, ps in enumerate(self.positions):
-            if game.level > i + 1:
-                for j in ps:
-                    game.set(j, "used level", _resolution=False, _origin=False)
-            else:
-                for j in ps:
-                    game.set(j, "unused level", _resolution=False, _origin=False)
-
-
-
-class moves_left:
-    def __init__(self, game):
-        self.id = "moves_left"
-        self.colors = {
-            "unused move": "orange",
-            "used move": "dark red"
-        }
-        game.protected_colors += ["used move", "unused move"]
-        self.on_move = 0
-
-    def render(self, game):
-
-        # paint the border
-        for i in range(game.actual_size[0]):
-            game.set((0,i), "unused move", _resolution=False, _origin=False)
-            game.set((game.actual_size[0]-1,i), "unused move", _resolution=False, _origin=False)
-            game.set((i,game.actual_size[1]-1), "unused move", _resolution=False, _origin=False)
-
-        # generate the list of positions
-        positions_list = []
-        for i in range(game.actual_size[0]//2):
-            halfway = game.actual_size[0]//2
-            top = game.actual_size[1] - 1
-            positions_list.append([(halfway-i-1, top), (halfway+i, top)])
-        self.positions = positions_list
-
-        for i in range(game.actual_size[1]-1)[::-1]:
-            positions_list.append([(0,i), (game.actual_size[0]-1,i)])
-        
-        # chunk the list
-        chunk_size = len(positions_list) / game.max_moves
-        self.positions = chunk_list_avg_size(positions_list, chunk_size)
-
-    def use_move(self, game):
-        if self.on_move >= len(self.positions):
-            return
-        
-        positions = self.positions[self.on_move]
-        for i in positions:
-            game.set(i[0], "used move", _resolution=False, _origin=False)
-            game.set(i[1], "used move", _resolution=False, _origin=False)
-
-        self.on_move += 1
-
-
-
 class patrols:
-    def __init__(self, game, _patrols=[]):
+    def __init__(self, game, input={}):
         self.id = "patrols"
         self.colors = {
             "patrol body": "orange",
             "patrol eye": "dark red"
         }
-        self.patrols = _patrols
+        self.patrols = input.get("patrols") or []
 
     def render(self, game):
 
@@ -184,14 +106,14 @@ class patrols:
 
 
 class border:
-    def __init__(self, game, initial_direction='up'):
+    def __init__(self, game, input={}):
         self.id = "border"
         self.colors = {
             "corner": "dark gray",
             "active border": "green",
             "inactive border": "light gray"
         }
-        self.initial_direction = initial_direction
+        self.initial_direction = input.get("initial_direction") or "up"
 
         self.left = -1
         self.right = game.board_size[0]
@@ -246,9 +168,9 @@ class floor:
     def render(self, game):
         game.set_rect("floor", (0,0), game.board_size)
 
-
+    
 class walls:
-    def __init__(self, game, positions=[]):
+    def __init__(self, game, input={}):
         self.id = "walls"
         self.colors = {
             "wall": "dark gray",
@@ -258,6 +180,8 @@ class walls:
             "wall-yellow": "yellow",
             "wall-soft blue": "soft blue",
         }
+        positions = input.get("positions") or []
+        
         self.walls = {}
         for i in self.colors:
             self.walls[i] = []
@@ -279,7 +203,7 @@ class walls:
 
 
 class players:
-    def __init__(self, game, player_data=[], end_data=[]):
+    def __init__(self, game, input={}):
         self.id = "players"
         self.colors = {
             "player-red": "red",
@@ -288,8 +212,8 @@ class players:
             "player-pink": "pink",
             "player-soft blue": "soft blue",
         }
-        self.player_data = player_data
-        self.end_data = end_data
+        self.player_data = input.get("player_data") or []
+        self.end_data = input.get("end_data") or []
 
     def render(self, game):
         for i in self.player_data:
@@ -393,19 +317,12 @@ class players:
             game.win = True
 
 
-from game_template import game_template
 
 class as66_game(game_template):
 
     def __init__(self, game):
         self.game_name = "as66"
-        
         game.size = [64, 64]
-        game.resolution = [1,1]
-        game.origin = (0,0)
-        game.max_levels = 9
-        game.level = 1
-        game.set_background("gray")
 
         game.list_of_objects = {
                 "moves_left": moves_left,
@@ -417,516 +334,6 @@ class as66_game(game_template):
                 "color_pads": color_pads,
                 "walls": walls
             }
-
-    def initialize_objects(self, game):
-
-        super().initialize_objects(game)
-        return
-
-        if game.level == 1:
-            
-            game.size = [16,16]
-            game.resolution = [4,4]
-            game.origin = (8,8)
-
-            game.board_origin = (0,0)
-            game.board_size = (12,12)
-
-            game.max_moves = 15
-            self.previous_button = "up"
-
-            game.add_objects([
-                moves_left(game),
-                levels_left(game),
-                border(game, initial_direction=self.previous_button),
-                floor(game),
-                patrols(game, []),
-                players(game, [
-                    {
-                        "player": "red",
-                        "position": (8,9),
-                    }
-                ], [
-                    {
-                        "end": (4,3)
-                    }
-                ]),
-                color_pads(game, []),
-                walls(game, [
-                    "......xx..x.",
-                    ".x.....xxx..",
-                    "..xx..xx.x..",
-                    "..xxx.......",
-                    ".xxxxx......",
-                    "..xx.....x..",
-                    ".......xxx..",
-                    ".......xxx..",
-                    "...o.o..x.x.",
-                    "...ooo......",
-                    "............",
-                    "............",
-                ])
-            ])
-        elif game.level == 2:
-            
-            game.size = [16,16]
-            game.resolution = [4,4]
-            game.origin = (8,8)
-
-            game.board_origin = (0,0)
-            game.board_size = (12,12)
-
-            game.max_moves = 12
-            self.previous_button = "left"
-
-            game.add_objects([
-                moves_left(game),
-                levels_left(game),
-                border(game, initial_direction=self.previous_button),
-                floor(game),
-                patrols(game, []),
-                color_pads(game, []),
-                players(game, [
-                    {
-                        "player": "yellow",
-                        "position": (9,6),
-                    }
-                ], [
-                    {
-                        "end": (2,3)
-                    }
-                ]),
-                walls(game, [
-                    "............",
-                    "..x.........",
-                    ".x..........",
-                    ".......x....",
-                    "......xxx...",
-                    "......xxx...",
-                    "......xx....",
-                    ".oo.........",
-                    ".o....xx....",
-                    ".oo..xxx..x.",
-                    ".........x..",
-                    "............",
-                ])
-            ])
-        elif game.level == 3:
-            
-            game.size = [16,16]
-            game.resolution = [4,4]
-            game.origin = (8,8)
-
-            game.board_origin = (0,0)
-            game.board_size = (12,12)
-            
-            game.max_moves = 18
-            self.previous_button = "up"
-
-            game.add_objects([
-                moves_left(game),
-                levels_left(game),
-                border(game, initial_direction=self.previous_button),
-                floor(game),
-                patrols(game, [
-                    {
-                        "position": (3,10),
-                        "dx": 1,
-                        "invisible wall": [(0, 10)]
-                    }
-                ]),
-                players(game, [
-                    {
-                        "player": "yellow",
-                        "position": (4,7),
-                    }
-                ], [
-                    {
-                        "end": (5,1)
-                    }
-                ]),
-                color_pads(game, []),
-                walls(game, [
-                    "........x...",
-                    "............",
-                    "............",
-                    "...xx.xx....",
-                    "...x...x....",
-                    "...x......x.",
-                    "......xx..x.",
-                    ".xx.........",
-                    ".x..x.......",
-                    "....ooo..xx.",
-                    "....o.o.....",
-                    "............",
-                ])
-            ])
-        elif game.level == 4:
-            
-            game.size = [16,16]
-            game.resolution = [4,4]
-            game.origin = (4,8)
-
-            game.board_origin = (0,0)
-            game.board_size = (14,12)
-
-            game.max_moves = 18
-            self.previous_button = "down"
-
-            game.add_objects([
-                moves_left(game),
-                levels_left(game),
-                border(game, initial_direction=self.previous_button),
-                floor(game),
-                patrols(game, []),
-                players(game, [
-                    {
-                        "player": "cyan",
-                        "position": (7,3),
-                    },
-                    {
-                        "player": "pink",
-                        "position": (4,7),
-                    }
-                ], [
-                    {
-                        "end": (2,4)
-                    },
-                    {
-                        "end": (4,1)
-                    }
-                ]),
-                color_pads(game, []),
-                walls(game, [
-                    "..............",
-                    "...x....xx....",
-                    "..xx.....xx...",
-                    "..............",
-                    "..xx.....x....",
-                    "..xxx...xx.x..",
-                    ".oo.......xxx.",
-                    ".c.........x..",
-                    ".oo...x....x..",
-                    "...opoxx..xxx.",
-                    "...o.o.....x..",
-                    ".............."
-                ])
-            ])
-        elif game.level == 5:
-
-            #game.size = [22, 22]
-            game.resolution = [3,3]
-            game.origin = (5,5)
-
-            game.board_origin = (0,0)
-            game.board_size = (18,18)
-
-            game.max_moves = 20
-
-            self.previous_button = "left"
-
-            game.add_objects([
-                moves_left(game),
-                levels_left(game),
-                border(game, initial_direction=self.previous_button),
-                floor(game),
-                patrols(game, [
-                    {
-                        "position": (1,14),
-                        "dy": -1
-                    },
-                    { "position": (6,10) },
-                    { "position": (6,4) },
-                    { "position": (12,2) },
-                ]),
-                players(game, [
-                    {
-                        "player": "cyan",
-                        "position": (7,8),
-                    }
-                ], [
-                    {
-                        "end": (3,13),
-                        "end_color": "yellow"
-                    }
-                ]),
-                color_pads(game, [
-                    {
-                        "color": "yellow",
-                        "positions": [(10,12), (10,13), (10,14)]
-                    }
-                ]),
-                walls(game, [
-                    "..................",
-                    "...xxxxx....xxx...",
-                    "...ooxx.....xxx...",
-                    "....yxx...........",
-                    "...ooxxx..........",
-                    "..................",
-                    "...............x..",
-                    "....x.....x.....x.",
-                    "...xxxx.........x.",
-                    "..xxxxx........xx.",
-                    "..xxxxx....xx..x..",
-                    "....x.......x..x..",
-                    "..................",
-                    "..................",
-                    "..................",
-                    "..................",
-                    ".................."
-                ])
-            ])
-        elif game.level == 6:
-
-            game.resolution = [3,3]
-            game.origin = (12,10)
-
-            game.board_origin = (0,0)
-            game.board_size = (13,15)
-
-            game.max_moves = 16
-            self.previous_button = "right"
-
-            game.add_objects([
-                moves_left(game),
-                levels_left(game),
-                border(game, initial_direction=self.previous_button),
-                floor(game),
-                patrols(game, [
-                    {
-                        "position": (1,2),
-                        "dx": 1,
-                    }
-                ]),
-                players(game, [
-                    {
-                        "player": "pink",
-                        "position": (8,5),
-                    }
-                ], [
-                    {
-                        "end": (3,4),
-                        "end_color": "soft blue"
-                    }
-                ]),
-                color_pads(game, [
-                    {
-                        "color": "soft blue",
-                        "positions": [(8,13), (9,13), (10,13)]
-                    }
-                ]),
-                walls(game, [
-                    ".............",
-                    ".............",
-                    ".............",
-                    ".xx.......x..",
-                    ".xxx.x..xxxx.",
-                    "........xxx..",
-                    ".........x...",
-                    ".............",
-                    ".............",
-                    "..obo.x..x...",
-                    "..o.o.xxxxx..",
-                    ".......xxxxx.",
-                    ".......xxxxx.",
-                    "..........x..",
-                    "............."
-                ]),
-            ])
-
-        elif game.level == 7:
-
-            game.resolution = [4,4]
-            game.origin = (6,12)
-
-            game.board_origin = (0,0)
-            game.board_size = (13,10)
-
-            game.max_moves = 20
-            self.previous_button = "right"
-
-            game.add_objects([
-                moves_left(game),
-                levels_left(game),
-                border(game, initial_direction=self.previous_button),
-                floor(game),
-                patrols(game, []),
-                players(game, [
-                    {
-                        "player": "pink",
-                        "position": (1,6),
-                    }
-                ], [
-                    {
-                        "end": (10,1),
-                        "end_color": "soft blue"
-                    }
-                ]),
-                color_pads(game, [
-                    {
-                        "color": "soft blue",
-                        "positions": [(6,5), (6,6), (6,7)]
-                    }
-                ]),
-                walls(game, [
-                    ".............",
-                    ".........x...",
-                    "..xx....xxxx.",
-                    "..xx.....x...",
-                    ".xxxx....x...",
-                    "..xx.........",
-                    ".............",
-                    ".........obo.",
-                    ".........o.o.",
-                    ".............",
-                ]),
-            ])
-
-        elif game.level == 8:
-
-            game.resolution = [3,3]
-            game.origin = (6,7)
-
-            game.board_origin = (0,0)
-            game.board_size = (17,17)
-
-            game.max_moves = 28
-            self.previous_button = "left"
-
-            game.add_objects([
-                moves_left(game),
-                levels_left(game),
-                border(game, initial_direction=self.previous_button),
-                floor(game),
-                patrols(game, [
-                    {
-                        "position": (4,5),
-                        "dx": 1,
-                        "dy": -1,
-                        "invisible wall": [(2, 7)]
-                    },
-                    {
-                        "position": (8,10),
-                        "dx": 1,
-                        "dy": 1
-                    }
-                ]),
-                players(game, [
-                    {
-                        "player": "yellow",
-                        "position": (2,4)
-                    }
-                ], [
-                    {
-                        "end": (15,2),
-                        "end_color": "soft blue"
-                    }
-                ]),
-                color_pads(game, [
-                    { 
-                        "color": "soft blue",
-                        "positions": [(6,13), (6,14), (6,15)]
-                    }
-                ]),
-                walls(game, [
-                    ".................",
-                    "............x....",
-                    ".xx.........xx...",
-                    ".x..........x....",
-                    ".................",
-                    ".................",
-                    "......x..........",
-                    ".x....x.....x....",
-                    ".xx..xxx...xx....",
-                    ".x....x.....x....",
-                    ".................",
-                    ".................",
-                    ".x..........x....",
-                    ".xx........xxxoo.",
-                    "..............b..",
-                    "..............oo.",
-                    ".................",
-                ]),
-            ])
-
-        elif game.level == 9:
-
-            game.resolution = [2,2]
-            game.origin = (11,15)
-
-            game.board_origin = (0,0)
-            game.board_size = (21,17)
-
-            game.max_moves = 30
-            self.previous_button = "left"
-
-            game.add_objects([
-                moves_left(game),
-                levels_left(game),
-                border(game, initial_direction=self.previous_button),
-                floor(game),
-                patrols(game, [
-                    {
-                        "position": (4,2),
-                        "dx": 1,
-                        "invisible wall": [(2, 2)]
-                    }
-                ]),
-                players(game, [
-                    {
-                        "player": "yellow",
-                        "position": (3,6),
-                    },
-                    {
-                        "player": "cyan",
-                        "position": (11,2),
-                    }
-                ], [
-                    {
-                        "end": (3,13),
-                        "end_color": "soft blue"
-                    }, 
-                    {
-                        "end": (11,5),
-                    }
-                ]),
-                color_pads(game, [
-                    {
-                        "color": "soft blue",
-                        "positions": [(11,12), (11,13), (11,14)]
-                    }, 
-                    {
-                        "color": "yellow",
-                        "positions": [(9,12), (9,13), (9,14)]
-                    }
-                ]),
-                walls(game, [
-                    ".....................",
-                    "......xx......xx.....",
-                    "......xx.....xxx.....",
-                    "..o.o.x.......x......",
-                    "..obo................",
-                    ".....................",
-                    ".xxx.................",
-                    ".xx...........xx.....",
-                    ".............xxx.....",
-                    ".xx...........xx.xxx.",
-                    ".xx.....x.oo.....xxx.",
-                    "..x....xx.o.......xx.",
-                    "..........oo.........",
-                    "..........xx.........",
-                    "..........x.......xx.",
-                    "..........xxx....xxx.",
-                    ".....................",
-                ]),
-            ])
-
-
-    def begin(self, game):
-        self.initialize_objects(game)
-
-    def press_tile(self, game, x, y):
-        pass
 
     def press_button(self, game, button):
 
@@ -945,8 +352,3 @@ class as66_game(game_template):
         if game.is_modified():
             game.find_object("moves_left").use_move(game)
             game.find_object("levels_left").update_level(game)
-
-
-def choose_game(game_name, game):
-    return ever_maze(game)
-
