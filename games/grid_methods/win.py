@@ -15,10 +15,8 @@ def win(self):
     win_color = self._colors["win"].index
 
     for i in spots:
-        for j in i:
-            self.set(j, win_color, _resolution=False, _origin=False, _fast=False)
+        self.group_set(i, win_color, _fast=False)
         self.next_frame()
-
     
     on_level = self.current_state.level + 1
     
@@ -38,9 +36,9 @@ def win(self):
     o = []
     for i in spots[::-1]:
         o.append([])
+        self.group_set(i, win_color, _fast=True)
         for j in i:
             o[-1].append((j, self.get(j)))
-            self.set(j, win_color, _resolution=False, _origin=False, _fast=True)
     
 
     for i in o:
