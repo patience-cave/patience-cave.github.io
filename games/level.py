@@ -403,7 +403,7 @@ class ever_maze:
         game.size = [64, 64]
         game.resolution = [1,1]
         game.origin = (0,0)
-        game.max_levels = 8
+        game.max_levels = 9
         game.level = 1
         game.set_background("gray")
 
