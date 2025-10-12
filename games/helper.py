@@ -35,6 +35,12 @@ def bfs_reachable_floors(game, start: Pos, max_steps: int = 5) -> Set[Pos]:
     """
     # if not is_floor(game, start):
     #     return set()
+    character = game.get(start)
+    characters = set(["floor", "chaser"])#, "runner", "bot"])
+    
+    # if character in ["bot", "chaser"]:
+    #     characters.remove("bot")
+    #     characters.remove("chaser")
 
     visited: Set[Pos] = {start}
     q = deque([(start, 0)])
@@ -44,18 +50,10 @@ def bfs_reachable_floors(game, start: Pos, max_steps: int = 5) -> Set[Pos]:
         if d == max_steps:
             continue
         for n in neighbors_4(pos):
-            if n not in visited and game.get(n) in ["floor", "chaser", "runner"]:
+            if n not in visited and game.get(n) in characters:
                 visited.add(n)
                 q.append((n, d + 1))
     return visited
-
-
-def any_chaser_within(game, start: Pos, reachable: Set[Pos]) -> bool:
-    """True if any reachable tile hosts a chaser."""
-    for p in reachable:
-        if game.get([p[0], p[1]]) == "chaser":
-            return True
-    return False
 
 
 def multi_source_floor_distances(game, sources: List[Pos], max_depth: int) -> Dict[Pos, int]:
@@ -122,35 +120,6 @@ def safest_next_move(
         return start
 
     return best_escape_move_from_positions(reachable, start, chasers[0])
-
-    # Candidate next steps = adjacent floors (distance 1 from start)
-    adj_floor: List[Pos] = [n for n in neighbors_4(start) if is_floor(game, n)]
-
-    # Edge case: nowhere to go
-    if not adj_floor:
-        return start
-    if len(adj_floor) == 1:
-        return start
-
-    # If no chasers within the reachable region
-    if not chasers:
-        if stay_if_safe:
-            return start
-        else:
-            return rng.choice(adj_floor)
-
-    # 3) Compute floor distances from any chaser (multi-source BFS), up to max_steps + 1
-    #    (+1 so that immediate next moves also get meaningful separation values)
-    dist_from_chaser = multi_source_floor_distances(game, chasers, max_depth=max_steps + 1)
-
-    # 4) Score each adjacent floor: maximize distance to nearest chaser (unknown => treat as +inf)
-    def score(p: Pos) -> int:
-        return dist_from_chaser.get(p, max_steps + 2)  # higher is safer
-
-    best_score = max(score(p) for p in adj_floor)
-    best_moves = [p for p in adj_floor if score(p) == best_score]
-
-    return rng.choice(best_moves)
 
 
 from collections import deque
@@ -234,6 +203,56 @@ def best_escape_move_from_positions(floors, me, chasers, width=None, height=None
     # Sort descending: safest first
     scored.sort(key=lambda s: (-s[0][0], -s[0][1], -s[0][2]))
     return scored[0][1]
+
+
+
+def next_step_toward(game, start, goal):
+    """
+    positions: iterable of (x, y) walkable coordinates
+    start: (x, y)
+    goal: (x, y)
+    returns: (nx, ny) next move from start, or None if no improving move exists
+    """
+    start = tuple(start)
+    goal = tuple(goal)
+    positions = bfs_reachable_floors(game, start, 5)
+
+    pos_set = set(positions)
+    if start == goal:
+        return start
+    if goal not in pos_set or start not in pos_set:
+        return None  # invalid endpoints
+
+    # 4-neighborhood
+    def nbrs(p):
+        x, y = p
+        return [(x+1,y), (x-1,y), (x,y+1), (x,y-1)]
+
+    # 1) Reverse BFS from goal to get shortest distances
+    dist = {goal: 0}
+    q = deque([goal])
+    while q:
+        p = q.popleft()
+        for n in nbrs(p):
+            if n in pos_set and n not in dist:
+                dist[n] = dist[p] + 1
+                q.append(n)
+
+    # If start isn't reachable from goal, there is no shortest path
+    if start not in dist:
+        return None
+
+    # 2) Choose start-neighbor with minimum distance-to-goal
+    candidates = [n for n in nbrs(start) if n in dist and n in pos_set]
+    if not candidates:
+        return None
+
+    # Pick the neighbor that minimizes distance; tie-break deterministically
+    best = min(candidates, key=lambda n: (dist[n], n[1], n[0]))  # tie-break by y then x
+    # Optional: ensure it actually moves closer (strictly less distance than start's)
+    if dist[best] >= dist[start]:
+        return None
+    return best
 
 
 # Impossibly Smark Bot

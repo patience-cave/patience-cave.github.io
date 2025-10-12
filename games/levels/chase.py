@@ -1,7 +1,38 @@
 from hmac import new
 from game_template import game_template
 from useful_objects import levels_left, moves_left, on_board, border, floor
-from helper import iterate_over_2D, lists_match, sort_objects_by_positions, diagonals, position_in_bounds, convert_tile_to_board, frontier_positions, safest_next_move
+from helper import iterate_over_2D, lists_match, sort_objects_by_positions, diagonals, position_in_bounds, convert_tile_to_board, frontier_positions, safest_next_move, next_step_toward
+
+
+
+class bot:
+    def __init__(self, game, input={}):
+        self.id = "bots"
+        self.colors = {
+            "bot": "red",
+        }
+        self.bots = input.get("bots") or []
+    
+    def render(self, game):
+        for bot in self.bots:
+            game.set(bot["position"], "bot")
+    
+    def give_chase(self, game):
+
+        chaser_position = game.find_object("chaser").position
+
+        for bot in self.bots:
+
+            new_position = next_step_toward(game, bot["position"], chaser_position)
+            if new_position is None:
+                continue
+
+            if game.get(new_position) == "chaser":
+                game.lose = True
+
+            game.set(bot["position"], "floor")
+            game.set(new_position, "bot")
+            bot["position"] = new_position
 
 
 class chaser:
@@ -27,6 +58,7 @@ class chaser:
             game.find_object("runners").eat_runner(game, new_position)
             game.set(self.position, "floor")
             game.set(new_position, "chaser")
+            self.position = new_position
         elif new_tile == "floor":
             game.set(self.position, "floor")
             game.set(new_position, "chaser")
@@ -40,14 +72,6 @@ class chaser:
                 return
         else:
             return
-        
-    # def distance_from_runner(self, game, position, naive=False):
-    #     if naive:
-    #         return abs(self.position[0] - position[0]) + abs(self.position[1] - position[1])
-    #     else:
-    #         new_position = min_steps_to_chaser(game, (position[0], position[1]), (self.position[0], self.position[1]))
-    #         return new_position
-
 
 
 class runners:
@@ -65,21 +89,18 @@ class runners:
 
     def run_away(self, game):
 
-        print(self.runners)
-
         for runner in self.runners:
 
             stress = False
             floor_positions = []
             for dx, dy in [(1, 0), (0, 1), (-1, 0), (0, -1)]:
                 new_position = [runner["position"][0] + dx, runner["position"][1] + dy]
-                if game.get(new_position) == "chaser":
+                if game.get(new_position) in ["chaser", "runner"]:
                     stress = True
                 elif game.get(new_position) == "floor":
                     floor_positions.append(new_position)
             
             if stress and len(floor_positions) == 1:
-                print("STRESS")
                 new_position = floor_positions[0]
             elif stress and not floor_positions:
                 continue
@@ -152,19 +173,24 @@ class chase_game(game_template):
             "floor": floor,
             "walls": walls,
             "chaser": chaser,
-            "runners": runners
+            "runners": runners,
+            "bots": bot,
         }
     
     def press_button(self, game, button):
 
         game.find_object("chaser").move(game, button.dx, button.dy)
 
-        game.next_frame()
-        
-        game.find_object("runners").run_away(game)
+        if game.is_modified():
 
-        if game.find_object("runners").runners == []:
-            game.win = True
+            game.next_frame()
+            
+            game.find_object("runners").run_away(game)
+
+            if game.find_object("runners").runners == []:
+                game.win = True
+            else:
+                game.find_object("bots").give_chase(game)
         
         if game.is_modified():
             game.find_object("moves_left").use_move(game)

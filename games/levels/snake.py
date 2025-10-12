@@ -113,6 +113,7 @@ class snakes:
         self.colors = {
             "head": "green",
             "body": "dark green",
+            "dead": "dark gray"
         }
         self.snakes = []
         for i in input.get("snakes") or []:
@@ -225,6 +226,21 @@ class snake_game(game_template):
 
         if game.find_object("fruits").no_more_fruits():
             game.win = True
+            return
+
+        for snake in game.find_object("snakes").snakes:
+            body_surrounded = 0
+            head = snake.head
+            for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                if game.get((head[0] + dx, head[1] + dy)) in ["wall", "inactive fruit", "body", "border"]:
+                    body_surrounded += 1
+            print(body_surrounded)
+            
+            if body_surrounded == 4:
+                game.next_frame()
+                for segment in snake.body[::-1]:
+                    game.set(segment, "dead")
+                    game.next_frame()
 
         if game.is_modified():
             game.find_object("moves_left").use_move(game)
